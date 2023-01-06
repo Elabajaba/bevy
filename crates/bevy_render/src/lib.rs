@@ -145,11 +145,11 @@ impl Plugin for RenderPlugin {
                 .map(|wrapper| unsafe {
                     let handle = wrapper.get_handle();
                     instance.create_surface(&handle)
-                });
+                }).unwrap().unwrap();
 
             let request_adapter_options = wgpu::RequestAdapterOptions {
                 power_preference: self.wgpu_settings.power_preference,
-                compatible_surface: surface.as_ref(),
+                compatible_surface: Some(&surface),
                 ..Default::default()
             };
             let (device, queue, adapter_info, render_adapter) =

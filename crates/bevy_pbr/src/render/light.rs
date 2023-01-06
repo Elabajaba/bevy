@@ -32,11 +32,11 @@ use bevy_render::{
     Extract,
 };
 use bevy_transform::{components::GlobalTransform, prelude::Transform};
-use bevy_utils::FloatOrd;
 use bevy_utils::{
     tracing::{error, warn},
     HashMap,
 };
+use bevy_utils::{FloatOrd, Instant};
 use std::num::{NonZeroU32, NonZeroU64};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemLabel)]
@@ -1483,8 +1483,13 @@ impl ViewClusterBindings {
                 cluster_light_index_lists,
                 cluster_offsets_and_counts,
             } => {
+                println!("writing storage buffers");
+                let light_index = Instant::now();
                 cluster_light_index_lists.write_buffer(render_device, render_queue);
+                println!("light index lists: {:?}", light_index.elapsed());
+                let offset = Instant::now();
                 cluster_offsets_and_counts.write_buffer(render_device, render_queue);
+                println!("offsets and counts: {:?}", offset.elapsed());
             }
         }
     }

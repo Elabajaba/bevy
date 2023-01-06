@@ -24,6 +24,11 @@ members = [
   "errors",
 ]
 
+[patch.crates-io]
+# wgpu = { git = "https://github.com/gfx-rs/wgpu.git", branch = "master" }
+wgpu = { path = "../wgpu/wgpu" }
+
+
 [features]
 default = [
   "animation",

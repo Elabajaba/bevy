@@ -247,6 +247,7 @@ pub async fn initialize_renderer(
             max_buffer_size: limits
                 .max_buffer_size
                 .min(constrained_limits.max_buffer_size),
+            ..Default::default()
         };
     }
 
