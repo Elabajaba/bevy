@@ -52,8 +52,14 @@ bevy_tasks = { path = "../bevy_tasks", version = "0.11.0-dev" }
 image = { version = "0.24", default-features = false }
 
 # misc
-wgpu = { version = "0.15.0", features = ["spirv"] }
-wgpu-hal = "0.15.1"
+# wgpu = { version = "0.15.0", features = ["spirv"] }
+# wgpu = { path = "D:/programming/wgpu/wgpu", features = ["spirv"] }
+# wgpu = { git = "https://github.com/gfx-rs/wgpu.git", branch = "trunk", features = ["spirv"] }
+wgpu = { git = "https://github.com/gents83/wgpu.git", branch = "master", features = ["spirv"] }
+# wgpu-hal = "0.15.1"
+# wgpu-hal = { path = "D:/programming/wgpu/wgpu-hal" }
+# wgpu-hal = { git = "https://github.com/gfx-rs/wgpu.git", branch = "trunk" }
+wgpu-hal = { git = "https://github.com/gents83/wgpu.git", branch = "master" }
 codespan-reporting = "0.11.0"
 naga = { version = "0.11.0", features = ["glsl-in", "spv-in", "spv-out", "wgsl-in", "wgsl-out"] }
 serde = { version = "1", features = ["derive"] }
