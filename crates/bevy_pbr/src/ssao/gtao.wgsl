@@ -61,10 +61,7 @@ fn calculate_neighboring_depth_differences(pixel_coordinates: vec2<i32>) -> f32 
 
 // TODO: Remove this once https://github.com/gfx-rs/naga/pull/2353 lands
 fn mypack4x8unorm(e: vec4<f32>) -> u32 {
-    return u32(clamp(e.x, 0.0, 1.0) * 255.0 + 0.5) |
-    u32(clamp(e.y, 0.0, 1.0) * 255.0 + 0.5) << 8u |
-    u32(clamp(e.z, 0.0, 1.0) * 255.0 + 0.5) << 16u |
-    u32(clamp(e.w, 0.0, 1.0) * 255.0 + 0.5) << 24u;
+    return u32(clamp(e.x, 0.0, 1.0) * 255.0 + 0.5) | u32(clamp(e.y, 0.0, 1.0) * 255.0 + 0.5) << 8u | u32(clamp(e.z, 0.0, 1.0) * 255.0 + 0.5) << 16u | u32(clamp(e.w, 0.0, 1.0) * 255.0 + 0.5) << 24u;
 }
 
 fn load_normal_view_space(uv: vec2<f32>) -> vec3<f32> {
@@ -90,9 +87,133 @@ fn load_and_reconstruct_view_space_position(uv: vec2<f32>, sample_mip_level: f32
     return reconstruct_view_space_position(depth, uv);
 }
 
+const THICKNESS = 0.5;
+const BITMASK_SIZE = 32.0;
+
 @compute
 @workgroup_size(8, 8, 1)
 fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
+    let slice_count = f32(#SLICE_COUNT);
+    // let samples_per_slice_side = f32(#SAMPLES_PER_SLICE_SIDE);
+    let samples_per_slice_side = BITMASK_SIZE / 2.0;
+    let effect_radius = 0.5 * 1.457;
+    let falloff_range = 0.615 * effect_radius;
+    let falloff_from = effect_radius * (1.0 - 0.615);
+    let falloff_mul = -1.0 / falloff_range;
+    let falloff_add = falloff_from / falloff_range + 1.0;
+
+    let pixel_coordinates = vec2<i32>(global_id.xy);
+    let uv: vec2<f32> = (vec2<f32>(pixel_coordinates) + 0.5) / view.viewport.zw;
+
+    var pixel_depth = calculate_neighboring_depth_differences(pixel_coordinates);
+    pixel_depth += 0.00001; // Avoid depth precision issues
+
+    let pixel_position = reconstruct_view_space_position(pixel_depth, uv);
+    let pixel_normal = load_normal_view_space(uv);
+    let view_vec = normalize(-pixel_position);
+
+    let noise = load_noise(pixel_coordinates);
+    let sample_scale = (-0.5 * effect_radius * view.projection[0][0]) / pixel_position.z;
+
+    var visibility = 0.0;
+    for (var slice_t = 0.0; slice_t < slice_count; slice_t += 1.0) {
+        let slice = slice_t + noise.x;
+        let phi = (PI / slice_count) * slice;
+        let omega = vec2<f32>(cos(phi), sin(phi));
+
+        let direction = vec3<f32>(omega.xy, 0.0);
+        let orthographic_direction = direction - (dot(direction, view_vec) * view_vec);
+        let axis = cross(direction, view_vec);
+        let projected_normal = pixel_normal - axis * dot(pixel_normal, axis);
+        let projected_normal_length = length(projected_normal);
+
+        let sign_norm = sign(dot(orthographic_direction, projected_normal));
+        let cos_norm = saturate(dot(projected_normal, view_vec) / projected_normal_length);
+        let n = sign_norm * fast_acos(cos_norm);
+
+        var vismask = 0u;
+
+        let min_cos_horizon_1 = cos(n + HALF_PI);
+        let min_cos_horizon_2 = cos(n - HALF_PI);
+
+        let sample_mul: vec2<f32> = vec2<f32>(omega.x, -omega.y) * sample_scale;
+        for (var sample_t = 0.0; sample_t < samples_per_slice_side; sample_t += 1.0) {
+            var sample_noise = (slice_t + sample_t * samples_per_slice_side) * 0.6180339887498948482;
+            sample_noise = fract(noise.y + sample_noise);
+
+            var s = (sample_t + sample_noise) / samples_per_slice_side;
+            s *= s; // https://github.com/GameTechDev/XeGTAO#sample-distribution
+            let sample = s * sample_mul;
+
+            let sample_mip_level = clamp(log2(length(sample)) - 3.3, 0.0, 5.0); // https://github.com/GameTechDev/XeGTAO#memory-bandwidth-bottleneck
+            let pos_1 = uv + sample;
+            let sample_position_1 = load_and_reconstruct_view_space_position(pos_1, sample_mip_level);
+            // let sample_back_position_1 = sample_position_1 - (vec3<f32>((pos_1 / normalize(pos_1)), 0.0)) * THICKNESS;
+            let sample_back_position_1 = sample_position_1 - ((pixel_position / normalize(pixel_position))) * THICKNESS;
+            let pos_2 = uv - sample;
+            let sample_position_2 = load_and_reconstruct_view_space_position(pos_2, sample_mip_level);
+            let sample_back_position_2 = sample_position_2 - ((pixel_position / normalize(pixel_position))) * THICKNESS;
+
+            let sample_difference_1 = sample_position_1 - pixel_position;
+            let sample_back_difference_1 = sample_back_position_1 - pixel_position;
+            let sample_difference_2 = sample_position_2 - pixel_position;
+            let sample_back_difference_2 = sample_back_position_2 - pixel_position;
+            let sample_distance_1 = length(sample_difference_1);
+            let sample_back_distance_1 = length(sample_back_difference_1);
+            let sample_distance_2 = length(sample_difference_2);
+            let sample_back_distance_2 = length(sample_back_difference_2);
+
+
+            // TODO: Use angular space no cosine space?
+            let sample_cos_horizon_1 = min(dot(sample_difference_1 / sample_distance_1, view_vec), min_cos_horizon_1);
+            let sample_back_cos_horizon_1 = min(dot(sample_back_difference_1 / sample_back_distance_1, view_vec), min_cos_horizon_1);
+            let sample_cos_horizon_2 = max(dot(sample_difference_2 / sample_distance_2, view_vec), min_cos_horizon_2);
+            let sample_back_cos_horizon_2 = max(dot(sample_back_difference_2 / sample_back_distance_2, view_vec), min_cos_horizon_2);
+
+            let sample_horizon_1 = fast_acos(sample_cos_horizon_1);
+            let sample_back_horizon_1 = fast_acos(sample_back_cos_horizon_1);
+            let sample_horizon_2 = -fast_acos(sample_cos_horizon_2);
+            let sample_back_horizon_2 = -fast_acos(sample_back_cos_horizon_2);
+
+
+            let min_sample_horizon_1 = min(sample_horizon_1, sample_back_horizon_1);
+            let min_sample_horizon_2 = min(sample_horizon_2, sample_back_horizon_2);
+            let max_sample_horizon_1 = max(sample_horizon_1, sample_back_horizon_1);
+            let max_sample_horizon_2 = max(sample_horizon_2, sample_back_horizon_2);
+
+            let a1: u32 = u32(floor(((min_sample_horizon_1 + HALF_PI) / PI) * BITMASK_SIZE));
+            let a2: u32 = u32(floor(((min_sample_horizon_2 + HALF_PI) / PI) * BITMASK_SIZE));
+            let b1: u32 = u32(ceil(((max_sample_horizon_1 - min_sample_horizon_1 + HALF_PI) / PI) * BITMASK_SIZE));
+            let b2: u32 = u32(ceil(((max_sample_horizon_2 - min_sample_horizon_2 + HALF_PI) / PI) * BITMASK_SIZE));
+
+            // TODO: Might be wrong, bits = 2^b − 1 << a
+            // let bit1 = ((1u << b1) - (1u << a1));
+            // let bit2 = ((1u << b2) - (1u << a2));
+            let bit1 = ((1u << b1) - 1u) << a1;
+            let bit2 = ((1u << b2) - 1u) << a2;
+            // let bit1: u32 = (u32(pow(2.0, f32(b1))) - 1u) << a1;
+            // let bit2: u32 = (u32(pow(2.0, f32(b2))) - 1u) << a2;
+
+            vismask |= bit1;
+            vismask |= bit2;
+        }
+
+        // let horizon_1 = fast_acos(cos_horizon_1);
+        // let horizon_2 = -fast_acos(cos_horizon_2);
+        // let v1 = (cos_norm + 2.0 * horizon_1 * sin(n) - cos(2.0 * horizon_1 - n)) / 4.0;
+        // let v2 = (cos_norm + 2.0 * horizon_2 * sin(n) - cos(2.0 * horizon_2 - n)) / 4.0;
+        // visibility += projected_normal_length * (v1 + v2);
+        visibility += 1.0 - (f32(countOneBits(vismask)) / BITMASK_SIZE);
+    }
+    visibility /= slice_count;
+    visibility = clamp(visibility, 0.3, 1.0);
+
+    textureStore(ambient_occlusion, pixel_coordinates, vec4<f32>(visibility, 0.0, 0.0, 0.0));
+}
+
+@compute
+@workgroup_size(8, 8, 1)
+fn gtao2(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let slice_count = f32(#SLICE_COUNT);
     let samples_per_slice_side = f32(#SAMPLES_PER_SLICE_SIDE);
     let effect_radius = 0.5 * 1.457;
@@ -170,7 +291,7 @@ fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
         visibility += projected_normal_length * (v1 + v2);
     }
     visibility /= slice_count;
-    visibility = clamp(visibility, 0.03, 1.0);
+    // visibility = clamp(visibility, 0.3, 1.0);
 
     textureStore(ambient_occlusion, pixel_coordinates, vec4<f32>(visibility, 0.0, 0.0, 0.0));
 }
