@@ -86,6 +86,10 @@ pub fn render_system(world: &mut World) {
 
     crate::view::screenshot::collect_screenshots(world);
 
+    ////////////////
+    let temp_instance = world.get_resource::<RenderInstance>().unwrap();
+    println!("{:?}", temp_instance.generate_report());
+
     // update the time and send it to the app world
     let time_sender = world.resource::<TimeSender>();
     time_sender.0.try_send(Instant::now()).expect(
@@ -344,6 +348,7 @@ impl RenderContext {
     /// Finalizes the queue and returns the queue of [`CommandBuffer`]s.
     pub fn finish(mut self) -> Vec<CommandBuffer> {
         self.flush_encoder();
+
         self.command_buffers
     }
 
