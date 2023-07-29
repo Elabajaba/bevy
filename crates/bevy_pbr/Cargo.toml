@@ -31,4 +31,4 @@ bitflags = "2.3"
 bytemuck = { version = "1", features = ["derive"] }
 radsort = "0.1"
 # naga_oil = "0.8"
-naga_oil = { git = "https://github.com/VitalyAnkh/naga_oil.git", branch = "update-naga-to-0.13" }
+naga_oil = { git = "https://github.com/robtfm/naga_oil.git", branch = "0.13" }
