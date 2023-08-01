@@ -1307,15 +1307,15 @@ impl ViewClusterBuffers {
 
     fn uniform() -> Self {
         ViewClusterBuffers::Uniform {
-            cluster_light_index_lists: UniformBuffer::default(),
-            cluster_offsets_and_counts: UniformBuffer::default(),
+            cluster_light_index_lists: UniformBuffer::new("cluster_light_index_lists"),
+            cluster_offsets_and_counts: UniformBuffer::new("cluster_offsets_and_counts"),
         }
     }
 
     fn storage() -> Self {
         ViewClusterBuffers::Storage {
-            cluster_light_index_lists: StorageBuffer::default(),
-            cluster_offsets_and_counts: StorageBuffer::default(),
+            cluster_light_index_lists: StorageBuffer::new("cluster_light_index_lists"),
+            cluster_offsets_and_counts: StorageBuffer::new("cluster_offsets_and_counts"),
         }
     }
 }

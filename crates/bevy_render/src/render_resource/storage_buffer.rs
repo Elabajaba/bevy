@@ -65,6 +65,19 @@ impl<T: ShaderType + Default> Default for StorageBuffer<T> {
     }
 }
 
+impl<T: ShaderType + Default> StorageBuffer<T> {
+    pub fn new(label: &str) -> Self {
+        Self {
+            value: T::default(),
+            scratch: StorageBufferWrapper::new(Vec::new()),
+            buffer: None,
+            label: Some(label.to_string()),
+            changed: false,
+            buffer_usage: BufferUsages::COPY_DST | BufferUsages::STORAGE,
+        }
+    }
+}
+
 impl<T: ShaderType + WriteInto> StorageBuffer<T> {
     #[inline]
     pub fn buffer(&self) -> Option<&Buffer> {

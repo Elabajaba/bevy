@@ -65,6 +65,19 @@ impl<T: ShaderType + Default> Default for UniformBuffer<T> {
     }
 }
 
+impl<T: ShaderType + Default> UniformBuffer<T> {
+    pub fn new(label: &str) -> Self {
+        Self {
+            value: T::default(),
+            scratch: UniformBufferWrapper::new(Vec::new()),
+            buffer: None,
+            label: Some(label.to_string()),
+            changed: false,
+            buffer_usage: BufferUsages::COPY_DST | BufferUsages::UNIFORM,
+        }
+    }
+}
+
 impl<T: ShaderType + WriteInto> UniformBuffer<T> {
     #[inline]
     pub fn buffer(&self) -> Option<&Buffer> {
