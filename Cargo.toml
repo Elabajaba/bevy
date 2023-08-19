@@ -18,7 +18,7 @@ naga = { git = "https://github.com/gfx-rs/naga", rev = "7a19f3af909202c7eafd3663
 # naga = { git = "https://github.com/gfx-rs/naga", rev = "bac2d82a430fbfcf100ee22b7c3bc12f3d593079" }
 # naga = { version = "0.13" }
 # naga_oil = { path = "D:/programming/naga_oil/" }
-naga_oil = { git = "https://github.com/Elabajaba/naga_oil.git", branch = "0.13-arc", rev = "b3fb42653e30fda721b1cd0c40132e9233661f06" }
+naga_oil = { git = "https://github.com/Elabajaba/naga_oil.git", rev = "b3fb42653e30fda721b1cd0c40132e9233661f06" }
 
 
 [workspace]
