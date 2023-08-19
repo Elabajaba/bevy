@@ -236,6 +236,7 @@ impl Plugin for RenderPlugin {
                     let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
                         backends,
                         dx12_shader_compiler: settings.dx12_shader_compiler.clone(),
+                        gles_minor_version: wgpu::Gles3MinorVersion::Automatic,
                     });
                     let surface = primary_window.map(|wrapper| unsafe {
                         // SAFETY: Plugins should be set up on the main thread.
