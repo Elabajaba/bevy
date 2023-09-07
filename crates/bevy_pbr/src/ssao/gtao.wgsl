@@ -94,8 +94,7 @@ const BITMASK_SIZE = 32.0;
 @workgroup_size(8, 8, 1)
 fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
     let slice_count = f32(#SLICE_COUNT);
-    // let samples_per_slice_side = f32(#SAMPLES_PER_SLICE_SIDE);
-    let samples_per_slice_side = BITMASK_SIZE / 2.0;
+    let samples_per_slice_side = f32(#SAMPLES_PER_SLICE_SIDE);
     let effect_radius = 0.5 * 1.457;
     let falloff_range = 0.615 * effect_radius;
     let falloff_from = effect_radius * (1.0 - 0.615);
@@ -109,6 +108,7 @@ fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
     pixel_depth += 0.00001; // Avoid depth precision issues
 
     let pixel_position = reconstruct_view_space_position(pixel_depth, uv);
+    let normalized_pixel_position = normalize(pixel_position);
     let pixel_normal = load_normal_view_space(uv);
     let view_vec = normalize(-pixel_position);
 
@@ -133,10 +133,13 @@ fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
         var vismask = 0u;
 
-        let min_cos_horizon_1 = cos(n + HALF_PI);
-        let min_cos_horizon_2 = cos(n - HALF_PI);
-
         let sample_mul: vec2<f32> = vec2<f32>(omega.x, -omega.y) * sample_scale;
+        let min_horizon = n - HALF_PI;
+        let max_horizon = n + HALF_PI;
+        // let min_horizons = vec2(-HALF_PI);
+        // let max_horizons = vec2(HALF_PI);
+        let min_horizons = vec2(min_horizon);
+        let max_horizons = vec2(max_horizon);
         for (var sample_t = 0.0; sample_t < samples_per_slice_side; sample_t += 1.0) {
             var sample_noise = (slice_t + sample_t * samples_per_slice_side) * 0.6180339887498948482;
             sample_noise = fract(noise.y + sample_noise);
@@ -147,44 +150,33 @@ fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
             let sample_mip_level = clamp(log2(length(sample)) - 3.3, 0.0, 5.0); // https://github.com/GameTechDev/XeGTAO#memory-bandwidth-bottleneck
             let pos_1 = uv + sample;
-            let sample_position_1 = load_and_reconstruct_view_space_position(pos_1, sample_mip_level);
-            // let sample_back_position_1 = sample_position_1 - (vec3<f32>((pos_1 / normalize(pos_1)), 0.0)) * THICKNESS;
-            let sample_back_position_1 = sample_position_1 - ((pixel_position / normalize(pixel_position))) * THICKNESS;
+            let front_sample_1 = load_and_reconstruct_view_space_position(pos_1, sample_mip_level);
+            let back_sample_1 = front_sample_1 - normalized_pixel_position * THICKNESS;
             let pos_2 = uv - sample;
-            let sample_position_2 = load_and_reconstruct_view_space_position(pos_2, sample_mip_level);
-            let sample_back_position_2 = sample_position_2 - ((pixel_position / normalize(pixel_position))) * THICKNESS;
+            let front_sample_2 = load_and_reconstruct_view_space_position(pos_2, sample_mip_level);
+            let back_sample_2 = front_sample_2 - normalized_pixel_position * THICKNESS;
 
-            let sample_difference_1 = sample_position_1 - pixel_position;
-            let sample_back_difference_1 = sample_back_position_1 - pixel_position;
-            let sample_difference_2 = sample_position_2 - pixel_position;
-            let sample_back_difference_2 = sample_back_position_2 - pixel_position;
-            let sample_distance_1 = length(sample_difference_1);
-            let sample_back_distance_1 = length(sample_back_difference_1);
-            let sample_distance_2 = length(sample_difference_2);
-            let sample_back_distance_2 = length(sample_back_difference_2);
+            var asdf1 = vec2(0.0, 0.0);
+            asdf1.x = dot(view_vec, normalize(front_sample_1 - pixel_position));
+            asdf1.y = dot(view_vec, normalize(back_sample_1 - pixel_position));
+            asdf1 = vec2(min(asdf1.x, asdf1.y), max(asdf1.x, asdf1.y));
+            asdf1.x = fast_acos(asdf1.x);
+            asdf1.y = -fast_acos(asdf1.y);
+            let temp = asdf1 - n;
+            asdf1 = n + clamp(temp, min_horizons, max_horizons);
 
+            var asdf2 = vec2(0.0, 0.0);
+            asdf2.x = dot(view_vec, normalize(front_sample_2 - pixel_position));
+            asdf2.y = dot(view_vec, normalize(back_sample_2 - pixel_position));
+            asdf2 = vec2(min(asdf2.x, asdf2.y), max(asdf2.x, asdf2.y));
+            asdf2.x = fast_acos(asdf2.x);
+            asdf2.y = -fast_acos(asdf2.y);
+            asdf2 = n + clamp(asdf2 - n, min_horizons, max_horizons);
 
-            // TODO: Use angular space no cosine space?
-            let sample_cos_horizon_1 = min(dot(sample_difference_1 / sample_distance_1, view_vec), min_cos_horizon_1);
-            let sample_back_cos_horizon_1 = min(dot(sample_back_difference_1 / sample_back_distance_1, view_vec), min_cos_horizon_1);
-            let sample_cos_horizon_2 = max(dot(sample_difference_2 / sample_distance_2, view_vec), min_cos_horizon_2);
-            let sample_back_cos_horizon_2 = max(dot(sample_back_difference_2 / sample_back_distance_2, view_vec), min_cos_horizon_2);
-
-            let sample_horizon_1 = fast_acos(sample_cos_horizon_1);
-            let sample_back_horizon_1 = fast_acos(sample_back_cos_horizon_1);
-            let sample_horizon_2 = -fast_acos(sample_cos_horizon_2);
-            let sample_back_horizon_2 = -fast_acos(sample_back_cos_horizon_2);
-
-
-            let min_sample_horizon_1 = min(sample_horizon_1, sample_back_horizon_1);
-            let min_sample_horizon_2 = min(sample_horizon_2, sample_back_horizon_2);
-            let max_sample_horizon_1 = max(sample_horizon_1, sample_back_horizon_1);
-            let max_sample_horizon_2 = max(sample_horizon_2, sample_back_horizon_2);
-
-            let a1: u32 = u32(floor(((min_sample_horizon_1 + HALF_PI) / PI) * BITMASK_SIZE));
-            let a2: u32 = u32(floor(((min_sample_horizon_2 + HALF_PI) / PI) * BITMASK_SIZE));
-            let b1: u32 = u32(ceil(((max_sample_horizon_1 - min_sample_horizon_1 + HALF_PI) / PI) * BITMASK_SIZE));
-            let b2: u32 = u32(ceil(((max_sample_horizon_2 - min_sample_horizon_2 + HALF_PI) / PI) * BITMASK_SIZE));
+            let a1: u32 = u32(floor(((asdf1.x + HALF_PI) / PI) * BITMASK_SIZE));
+            let a2: u32 = u32(floor(((asdf2.x + HALF_PI) / PI) * BITMASK_SIZE));
+            let b1: u32 = u32(ceil(((asdf1.y - asdf1.x + HALF_PI) / PI) * BITMASK_SIZE));
+            let b2: u32 = u32(ceil(((asdf2.y - asdf2.x + HALF_PI) / PI) * BITMASK_SIZE));
 
             // TODO: Might be wrong, bits = 2^b − 1 << a
             // let bit1 = ((1u << b1) - (1u << a1));
@@ -198,15 +190,10 @@ fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
             vismask |= bit2;
         }
 
-        // let horizon_1 = fast_acos(cos_horizon_1);
-        // let horizon_2 = -fast_acos(cos_horizon_2);
-        // let v1 = (cos_norm + 2.0 * horizon_1 * sin(n) - cos(2.0 * horizon_1 - n)) / 4.0;
-        // let v2 = (cos_norm + 2.0 * horizon_2 * sin(n) - cos(2.0 * horizon_2 - n)) / 4.0;
-        // visibility += projected_normal_length * (v1 + v2);
         visibility += 1.0 - (f32(countOneBits(vismask)) / BITMASK_SIZE);
     }
     visibility /= slice_count;
-    visibility = clamp(visibility, 0.3, 1.0);
+    // visibility = clamp(visibility, 0.3, 1.0);
 
     textureStore(ambient_occlusion, pixel_coordinates, vec4<f32>(visibility, 0.0, 0.0, 0.0));
 }
