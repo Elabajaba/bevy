@@ -114,6 +114,8 @@ fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
     let noise = load_noise(pixel_coordinates);
     let sample_scale = (-0.5 * effect_radius * view.projection[0][0]) / pixel_position.z;
+    // TODO: Tweak this to find values that make sense
+    let T = THICKNESS * pixel_depth;
 
     var visibility = 0.0;
     for (var slice_t = 0.0; slice_t < slice_count; slice_t += 1.0) {
@@ -151,10 +153,10 @@ fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
             let sample_mip_level = clamp(log2(length(sample)) - 3.3, 0.0, 5.0); // https://github.com/GameTechDev/XeGTAO#memory-bandwidth-bottleneck
             let pos_1 = uv + sample;
             let front_sample_1 = load_and_reconstruct_view_space_position(pos_1, sample_mip_level);
-            let back_sample_1 = front_sample_1 - normalized_pixel_position * THICKNESS;
+            let back_sample_1 = front_sample_1 - normalized_pixel_position * T;
             let pos_2 = uv - sample;
             let front_sample_2 = load_and_reconstruct_view_space_position(pos_2, sample_mip_level);
-            let back_sample_2 = front_sample_2 - normalized_pixel_position * THICKNESS;
+            let back_sample_2 = front_sample_2 - normalized_pixel_position * T;
 
             var asdf1 = vec2(0.0, 0.0);
             asdf1.x = dot(view_vec, normalize(front_sample_1 - pixel_position));
