@@ -87,6 +87,7 @@ fn load_and_reconstruct_view_space_position(uv: vec2<f32>, sample_mip_level: f32
     return reconstruct_view_space_position(depth, uv);
 }
 
+// TODO: These should be configurable
 const THICKNESS = 0.5;
 const BITMASK_SIZE = 32.0;
 
@@ -158,35 +159,30 @@ fn gtao(@builtin(global_invocation_id) global_id: vec3<u32>) {
             let front_sample_2 = load_and_reconstruct_view_space_position(pos_2, sample_mip_level);
             let back_sample_2 = front_sample_2 - normalized_pixel_position * T;
 
-            var asdf1 = vec2(0.0, 0.0);
-            asdf1.x = dot(view_vec, normalize(front_sample_1 - pixel_position));
-            asdf1.y = dot(view_vec, normalize(back_sample_1 - pixel_position));
-            asdf1 = vec2(min(asdf1.x, asdf1.y), max(asdf1.x, asdf1.y));
-            asdf1.x = fast_acos(asdf1.x);
-            asdf1.y = -fast_acos(asdf1.y);
-            let temp = asdf1 - n;
-            asdf1 = n + clamp(temp, min_horizons, max_horizons);
+            var horizon_angles_1 = vec2(0.0, 0.0);
+            horizon_angles_1.x = dot(view_vec, normalize(front_sample_1 - pixel_position));
+            horizon_angles_1.y = dot(view_vec, normalize(back_sample_1 - pixel_position));
+            horizon_angles_1 = vec2(min(horizon_angles_1.x, horizon_angles_1.y), max(horizon_angles_1.x, horizon_angles_1.y));
+            horizon_angles_1.x = fast_acos(horizon_angles_1.x);
+            horizon_angles_1.y = -fast_acos(horizon_angles_1.y);
+            horizon_angles_1 = n + clamp(horizon_angles_1 - n, min_horizons, max_horizons);
 
-            var asdf2 = vec2(0.0, 0.0);
-            asdf2.x = dot(view_vec, normalize(front_sample_2 - pixel_position));
-            asdf2.y = dot(view_vec, normalize(back_sample_2 - pixel_position));
-            asdf2 = vec2(min(asdf2.x, asdf2.y), max(asdf2.x, asdf2.y));
-            asdf2.x = fast_acos(asdf2.x);
-            asdf2.y = -fast_acos(asdf2.y);
-            asdf2 = n + clamp(asdf2 - n, min_horizons, max_horizons);
+            var horizon_angles_2 = vec2(0.0, 0.0);
+            horizon_angles_2.x = dot(view_vec, normalize(front_sample_2 - pixel_position));
+            horizon_angles_2.y = dot(view_vec, normalize(back_sample_2 - pixel_position));
+            horizon_angles_2 = vec2(min(horizon_angles_2.x, horizon_angles_2.y), max(horizon_angles_2.x, horizon_angles_2.y));
+            horizon_angles_2.x = fast_acos(horizon_angles_2.x);
+            horizon_angles_2.y = -fast_acos(horizon_angles_2.y);
+            horizon_angles_2 = n + clamp(horizon_angles_2 - n, min_horizons, max_horizons);
 
-            let a1: u32 = u32(floor(((asdf1.x + HALF_PI) / PI) * BITMASK_SIZE));
-            let a2: u32 = u32(floor(((asdf2.x + HALF_PI) / PI) * BITMASK_SIZE));
-            let b1: u32 = u32(ceil(((asdf1.y - asdf1.x + HALF_PI) / PI) * BITMASK_SIZE));
-            let b2: u32 = u32(ceil(((asdf2.y - asdf2.x + HALF_PI) / PI) * BITMASK_SIZE));
+            let a1: u32 = u32(floor(((horizon_angles_1.x + HALF_PI) / PI) * BITMASK_SIZE));
+            let a2: u32 = u32(floor(((horizon_angles_2.x + HALF_PI) / PI) * BITMASK_SIZE));
+            let b1: u32 = u32(ceil(((horizon_angles_1.y - horizon_angles_1.x + HALF_PI) / PI) * BITMASK_SIZE));
+            let b2: u32 = u32(ceil(((horizon_angles_2.y - horizon_angles_2.x + HALF_PI) / PI) * BITMASK_SIZE));
 
-            // TODO: Might be wrong, bits = 2^b − 1 << a
-            // let bit1 = ((1u << b1) - (1u << a1));
-            // let bit2 = ((1u << b2) - (1u << a2));
+            // bits = (2^b − 1) << a
             let bit1 = ((1u << b1) - 1u) << a1;
             let bit2 = ((1u << b2) - 1u) << a2;
-            // let bit1: u32 = (u32(pow(2.0, f32(b1))) - 1u) << a1;
-            // let bit2: u32 = (u32(pow(2.0, f32(b2))) - 1u) << a2;
 
             vismask |= bit1;
             vismask |= bit2;
