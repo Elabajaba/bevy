@@ -1,7 +1,7 @@
 use crate::{
     clear_color::{ClearColor, ClearColorConfig},
     core_3d::{Camera3d, Opaque3d},
-    prepass::{DepthPrepass, MotionVectorPrepass, NormalPrepass},
+    prepass::{DeferredPrepass, DepthPrepass, MotionVectorPrepass, NormalPrepass},
     skybox::{SkyboxBindGroup, SkyboxPipelineId},
 };
 use bevy_ecs::{prelude::*, query::QueryItem};
@@ -10,8 +10,8 @@ use bevy_render::{
     render_graph::{NodeRunError, RenderGraphContext, ViewNode},
     render_phase::{RenderPhase, TrackedRenderPass},
     render_resource::{
-        CommandEncoderDescriptor, LoadOp, Operations, PipelineCache,
-        RenderPassDepthStencilAttachment, RenderPassDescriptor,
+        CommandEncoderDescriptor, LoadOp, Operations, PipelineCache, RenderPassDepthStencilAttachment, RenderPassDescriptor,
+        StoreOp,
     },
     renderer::{RenderContext, RenderDevice},
     view::{ViewDepthTexture, ViewTarget, ViewUniformOffset},
@@ -25,7 +25,7 @@ use super::{AlphaMask3d, Camera3dDepthLoadOp};
 #[derive(Default)]
 pub struct MainOpaquePass3dNode;
 impl ViewNode for MainOpaquePass3dNode {
-    type ViewQuery = (
+    type ViewData = (
         &'static ExtractedCamera,
         &'static RenderPhase<Opaque3d>,
         &'static RenderPhase<AlphaMask3d>,
@@ -35,6 +35,7 @@ impl ViewNode for MainOpaquePass3dNode {
         Option<&'static DepthPrepass>,
         Option<&'static NormalPrepass>,
         Option<&'static MotionVectorPrepass>,
+        Option<&'static DeferredPrepass>,
         Option<&'static SkyboxPipelineId>,
         Option<&'static SkyboxBindGroup>,
         &'static ViewUniformOffset,
@@ -54,21 +55,29 @@ impl ViewNode for MainOpaquePass3dNode {
             depth_prepass,
             normal_prepass,
             motion_vector_prepass,
+            deferred_prepass,
             skybox_pipeline,
             skybox_bind_group,
             view_uniform_offset,
-        ): QueryItem<'w, Self::ViewQuery>,
+        ): QueryItem<'w, Self::ViewData>,
         world: &'w World,
     ) -> Result<(), NodeRunError> {
-        let view_entity = graph.view_entity();
-
-        let color_attachment = target.get_color_attachment(Operations {
-            load: match camera_3d.clear_color {
+        let load = if deferred_prepass.is_none() {
+            match camera_3d.clear_color {
                 ClearColorConfig::Default => LoadOp::Clear(world.resource::<ClearColor>().0.into()),
                 ClearColorConfig::Custom(color) => LoadOp::Clear(color.into()),
                 ClearColorConfig::None => LoadOp::Load,
-            },
-            store: true,
+            }
+        } else {
+            // If the deferred lighting pass has run, don't clear again in this pass.
+            LoadOp::Load
+        };
+
+        let view_entity = graph.view_entity();
+
+        let color_attachment = target.get_color_attachment(Operations {
+            load,
+            store: StoreOp::Store,
         });
 
         render_context.add_command_buffer_generation_task(move |render_device: RenderDevice| {
@@ -94,6 +103,7 @@ impl ViewNode for MainOpaquePass3dNode {
                         load: if depth_prepass.is_some()
                             || normal_prepass.is_some()
                             || motion_vector_prepass.is_some()
+                            || deferred_prepass.is_some()
                         {
                             // if any prepass runs, it will generate a depth buffer so we should use it,
                             // even if only the normal_prepass is used.
@@ -103,10 +113,12 @@ impl ViewNode for MainOpaquePass3dNode {
                             camera_3d.depth_load_op.clone()
                         }
                         .into(),
-                        store: true,
+                        store: StoreOp::Store,
                     }),
                     stencil_ops: None,
                 }),
+                timestamp_writes: None,
+                occlusion_query_set: None,
             });
             let mut render_pass = TrackedRenderPass::new(&render_device, render_pass);
 

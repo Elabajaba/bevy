@@ -146,9 +146,7 @@ fn asset_loaded(
         // NOTE: PNGs do not have any metadata that could indicate they contain a cubemap texture,
         // so they appear as one texture. The following code reconfigures the texture as necessary.
         if image.texture_descriptor.array_layer_count() == 1 {
-            image.reinterpret_stacked_2d_as_array(
-                image.texture_descriptor.size.height / image.texture_descriptor.size.width,
-            );
+            image.reinterpret_stacked_2d_as_array(image.height() / image.width());
             image.texture_view_descriptor = Some(TextureViewDescriptor {
                 dimension: Some(TextureViewDimension::Cube),
                 ..default()
@@ -200,15 +198,15 @@ impl Default for CameraController {
             enabled: true,
             initialized: false,
             sensitivity: 0.5,
-            key_forward: KeyCode::W,
-            key_back: KeyCode::S,
-            key_left: KeyCode::A,
-            key_right: KeyCode::D,
-            key_up: KeyCode::E,
-            key_down: KeyCode::Q,
+            key_forward: KeyCode::KeyW,
+            key_back: KeyCode::KeyS,
+            key_left: KeyCode::KeyA,
+            key_right: KeyCode::KeyD,
+            key_up: KeyCode::KeyE,
+            key_down: KeyCode::KeyQ,
             key_run: KeyCode::ShiftLeft,
             mouse_key_enable_mouse: MouseButton::Left,
-            keyboard_key_enable_mouse: KeyCode::M,
+            keyboard_key_enable_mouse: KeyCode::KeyM,
             walk_speed: 2.0,
             run_speed: 6.0,
             friction: 0.5,
@@ -222,8 +220,8 @@ impl Default for CameraController {
 pub fn camera_controller(
     time: Res<Time>,
     mut mouse_events: EventReader<MouseMotion>,
-    mouse_button_input: Res<Input<MouseButton>>,
-    key_input: Res<Input<KeyCode>>,
+    mouse_button_input: Res<ButtonInput<MouseButton>>,
+    key_input: Res<ButtonInput<KeyCode>>,
     mut move_toggled: Local<bool>,
     mut query: Query<(&mut Transform, &mut CameraController), With<Camera>>,
 ) {
