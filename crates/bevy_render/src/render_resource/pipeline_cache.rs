@@ -12,8 +12,9 @@ use bevy_ecs::system::{Res, ResMut};
 use bevy_ecs::{event::EventReader, system::Resource};
 use bevy_utils::{
     default,
+    hashbrown::hash_map::EntryRef,
     tracing::{debug, error},
-    Entry, HashMap, HashSet,
+    HashMap, HashSet,
 };
 use naga::valid::Capabilities;
 use std::{
@@ -272,10 +273,9 @@ impl ShaderCache {
 
         data.pipelines.insert(pipeline);
 
-        // PERF: this shader_defs clone isn't great. use raw_entry_mut when it stabilizes
-        let module = match data.processed_shaders.entry(shader_defs.to_vec()) {
-            Entry::Occupied(entry) => entry.into_mut(),
-            Entry::Vacant(entry) => {
+        let module = match data.processed_shaders.entry_ref(shader_defs) {
+            EntryRef::Occupied(entry) => entry.into_mut(),
+            EntryRef::Vacant(entry) => {
                 let mut shader_defs = shader_defs.to_vec();
                 #[cfg(all(feature = "webgl", target_arch = "wasm32"))]
                 {
