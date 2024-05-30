@@ -30,6 +30,16 @@ members = [
   "errors",
 ]
 
+[patch.crates-io]
+# backported vulkan submission changes #5681
+# wgpu = { git = "https://github.com/Friz64/wgpu.git", branch = "v0.20-5681" }
+# wgpu-types = { git = "https://github.com/Friz64/wgpu.git", branch = "v0.20-5681" }
+# naga = { git = "https://github.com/Friz64/wgpu.git", branch = "v0.20-5681" }
+wgpu = { git = "https://github.com/gfx-rs/wgpu.git", rev = "c7458638d14921c7562e4197ddeefa17be413587" }
+wgpu-types = { git = "https://github.com/gfx-rs/wgpu.git", rev = "c7458638d14921c7562e4197ddeefa17be413587" }
+naga = { git = "https://github.com/gfx-rs/wgpu.git", rev = "c7458638d14921c7562e4197ddeefa17be413587" }
+
+
 [workspace.lints.clippy]
 type_complexity = "allow"
 doc_markdown = "warn"

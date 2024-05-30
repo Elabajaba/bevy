@@ -619,7 +619,7 @@ impl WriteTimestamp for RenderPass<'_> {
     }
 }
 
-impl WriteTimestamp for ComputePass<'_> {
+impl WriteTimestamp for ComputePass {
     fn write_timestamp(&mut self, query_set: &QuerySet, index: u32) {
         ComputePass::write_timestamp(self, query_set, index);
     }
@@ -641,7 +641,7 @@ impl WritePipelineStatistics for RenderPass<'_> {
     }
 }
 
-impl WritePipelineStatistics for ComputePass<'_> {
+impl WritePipelineStatistics for ComputePass {
     fn begin_pipeline_statistics_query(&mut self, query_set: &QuerySet, index: u32) {
         ComputePass::begin_pipeline_statistics_query(self, query_set, index);
     }
@@ -659,7 +659,7 @@ impl Pass for RenderPass<'_> {
     const KIND: PassKind = PassKind::Render;
 }
 
-impl Pass for ComputePass<'_> {
+impl Pass for ComputePass {
     const KIND: PassKind = PassKind::Compute;
 }
 
