@@ -49,10 +49,11 @@ impl ViewNode for MainTransparentPass3dNode {
             let _main_transparent_pass_3d_span = info_span!("main_transparent_pass_3d").entered();
 
             let diagnostics = render_context.diagnostic_recorder();
+            let color_attachments = &[Some(target.get_color_attachment())];
 
             let mut render_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
                 label: Some("main_transparent_pass_3d"),
-                color_attachments: &[Some(target.get_color_attachment())],
+                color_attachments,
                 // NOTE: For the transparent pass we load the depth buffer. There should be no
                 // need to write to it, but store is set to `true` as a workaround for issue #3776,
                 // https://github.com/bevyengine/bevy/issues/3776

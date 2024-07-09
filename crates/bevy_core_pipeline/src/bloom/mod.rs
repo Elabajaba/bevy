@@ -172,14 +172,15 @@ impl ViewNode for BloomNode {
             );
 
             let view = &bloom_texture.view(0);
+            let color_attachments = [Some(RenderPassColorAttachment {
+                view,
+                resolve_target: None,
+                ops: Operations::default(),
+            })];
             let mut downsampling_first_pass =
                 render_context.begin_tracked_render_pass(RenderPassDescriptor {
                     label: Some("bloom_downsampling_first_pass"),
-                    color_attachments: &[Some(RenderPassColorAttachment {
-                        view,
-                        resolve_target: None,
-                        ops: Operations::default(),
-                    })],
+                    color_attachments: &color_attachments,
                     depth_stencil_attachment: None,
                     timestamp_writes: None,
                     occlusion_query_set: None,
@@ -196,14 +197,15 @@ impl ViewNode for BloomNode {
         // Other downsample passes
         for mip in 1..bloom_texture.mip_count {
             let view = &bloom_texture.view(mip);
+            let color_attachments = [Some(RenderPassColorAttachment {
+                view,
+                resolve_target: None,
+                ops: Operations::default(),
+            })];
             let mut downsampling_pass =
                 render_context.begin_tracked_render_pass(RenderPassDescriptor {
                     label: Some("bloom_downsampling_pass"),
-                    color_attachments: &[Some(RenderPassColorAttachment {
-                        view,
-                        resolve_target: None,
-                        ops: Operations::default(),
-                    })],
+                    color_attachments: &color_attachments,
                     depth_stencil_attachment: None,
                     timestamp_writes: None,
                     occlusion_query_set: None,
@@ -220,17 +222,15 @@ impl ViewNode for BloomNode {
         // Upsample passes except the final one
         for mip in (1..bloom_texture.mip_count).rev() {
             let view = &bloom_texture.view(mip - 1);
+            let color_attachments = [Some(RenderPassColorAttachment {
+                view,
+                resolve_target: None,
+                ops: Operations::default(),
+            })];
             let mut upsampling_pass =
                 render_context.begin_tracked_render_pass(RenderPassDescriptor {
                     label: Some("bloom_upsampling_pass"),
-                    color_attachments: &[Some(RenderPassColorAttachment {
-                        view,
-                        resolve_target: None,
-                        ops: Operations {
-                            load: LoadOp::Load,
-                            store: StoreOp::Store,
-                        },
-                    })],
+                    color_attachments: &color_attachments,
                     depth_stencil_attachment: None,
                     timestamp_writes: None,
                     occlusion_query_set: None,
@@ -254,10 +254,11 @@ impl ViewNode for BloomNode {
         // This is very similar to the above upsampling passes with the only difference
         // being the pipeline (which itself is barely different) and the color attachment
         {
+            let color_attachments = [Some(view_target.get_unsampled_color_attachment())];
             let mut upsampling_final_pass =
                 render_context.begin_tracked_render_pass(RenderPassDescriptor {
                     label: Some("bloom_upsampling_final_pass"),
-                    color_attachments: &[Some(view_target.get_unsampled_color_attachment())],
+                    color_attachments: &color_attachments,
                     depth_stencil_attachment: None,
                     timestamp_writes: None,
                     occlusion_query_set: None,

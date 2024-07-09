@@ -198,16 +198,18 @@ impl ViewNode for PostProcessNode {
             )),
         );
 
+        let color_attachments = &[Some(RenderPassColorAttachment {
+            // We need to specify the post process destination view here
+            // to make sure we write to the appropriate texture.
+            view: post_process.destination,
+            resolve_target: None,
+            ops: Operations::default(),
+        })];
+
         // Begin the render pass
         let mut render_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
             label: Some("post_process_pass"),
-            color_attachments: &[Some(RenderPassColorAttachment {
-                // We need to specify the post process destination view here
-                // to make sure we write to the appropriate texture.
-                view: post_process.destination,
-                resolve_target: None,
-                ops: Operations::default(),
-            })],
+            color_attachments,
             depth_stencil_attachment: None,
             timestamp_writes: None,
             occlusion_query_set: None,

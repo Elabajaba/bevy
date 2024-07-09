@@ -194,10 +194,11 @@ impl ViewNode for DeferredOpaquePass3dPbrLightingNode {
             &deferred_lighting_layout.bind_group_layout_1,
             &BindGroupEntries::single(deferred_lighting_pass_id_binding),
         );
+        let color_attachments = &[Some(target.get_color_attachment())];
 
         let mut render_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
             label: Some("deferred_lighting_pass"),
-            color_attachments: &[Some(target.get_color_attachment())],
+            color_attachments,
             depth_stencil_attachment: Some(RenderPassDepthStencilAttachment {
                 view: &deferred_lighting_id_depth_texture.texture.default_view,
                 depth_ops: Some(Operations {

@@ -12,6 +12,13 @@ repository = "https://github.com/bevyengine/bevy"
 documentation = "https://docs.rs/bevy"
 rust-version = "1.79.0"
 
+# Double slash trick here might not work on Windows.
+# [patch.'https://github.com/Elabajaba/wgpu.git']
+# wgpu = { git = "https://github.com/Elabajaba//wgpu.git", branch = "no-submit-tracking-only-revert" }
+# wgpu-types = { git = "https://github.com/Elabajaba//wgpu.git", branch = "no-submit-tracking-only-revert" }
+# naga = { git = "https://github.com/Elabajaba//wgpu.git", branch = "no-submit-tracking-only-revert" }
+
+
 [workspace]
 exclude = [
   "benches",

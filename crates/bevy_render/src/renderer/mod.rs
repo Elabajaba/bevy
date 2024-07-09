@@ -431,7 +431,7 @@ impl<'w> RenderContext<'w> {
     /// configured using the provided `descriptor`.
     pub fn begin_tracked_render_pass<'a>(
         &'a mut self,
-        descriptor: RenderPassDescriptor<'a, '_>,
+        descriptor: RenderPassDescriptor<'a>,
     ) -> TrackedRenderPass<'a> {
         // Cannot use command_encoder() as we need to split the borrow on self
         let command_encoder = self.command_encoder.get_or_insert_with(|| {

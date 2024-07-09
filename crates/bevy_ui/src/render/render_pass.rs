@@ -70,9 +70,10 @@ impl Node for UiPassNode {
         } else {
             input_view_entity
         };
+        let color_attachments = &[Some(target.get_unsampled_color_attachment())];
         let mut render_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
             label: Some("ui_pass"),
-            color_attachments: &[Some(target.get_unsampled_color_attachment())],
+            color_attachments,
             depth_stencil_attachment: None,
             timestamp_writes: None,
             occlusion_query_set: None,

@@ -300,14 +300,16 @@ impl ViewNode for ScreenSpaceReflectionsNode {
             )),
         );
 
+        let color_attachments = &[Some(RenderPassColorAttachment {
+            view: postprocess.destination,
+            resolve_target: None,
+            ops: Operations::default(),
+        })];
+
         // Build the SSR render pass.
         let mut render_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
             label: Some("SSR pass"),
-            color_attachments: &[Some(RenderPassColorAttachment {
-                view: postprocess.destination,
-                resolve_target: None,
-                ops: Operations::default(),
-            })],
+            color_attachments,
             depth_stencil_attachment: None,
             timestamp_writes: None,
             occlusion_query_set: None,

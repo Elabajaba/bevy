@@ -202,20 +202,21 @@ impl ViewNode for TemporalAntiAliasNode {
         );
 
         {
+            let color_attachments = &[
+                Some(RenderPassColorAttachment {
+                    view: view_target.destination,
+                    resolve_target: None,
+                    ops: Operations::default(),
+                }),
+                Some(RenderPassColorAttachment {
+                    view: &taa_history_textures.write.default_view,
+                    resolve_target: None,
+                    ops: Operations::default(),
+                }),
+            ];
             let mut taa_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
                 label: Some("taa_pass"),
-                color_attachments: &[
-                    Some(RenderPassColorAttachment {
-                        view: view_target.destination,
-                        resolve_target: None,
-                        ops: Operations::default(),
-                    }),
-                    Some(RenderPassColorAttachment {
-                        view: &taa_history_textures.write.default_view,
-                        resolve_target: None,
-                        ops: Operations::default(),
-                    }),
-                ],
+                color_attachments,
                 depth_stencil_attachment: None,
                 timestamp_writes: None,
                 occlusion_query_set: None,

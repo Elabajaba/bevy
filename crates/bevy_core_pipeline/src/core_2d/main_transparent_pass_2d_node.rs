@@ -42,10 +42,11 @@ impl ViewNode for MainTransparentPass2dNode {
             let _main_pass_2d = info_span!("main_transparent_pass_2d").entered();
 
             let diagnostics = render_context.diagnostic_recorder();
+            let color_attachments = &[Some(target.get_color_attachment())];
 
             let mut render_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
                 label: Some("main_transparent_pass_2d"),
-                color_attachments: &[Some(target.get_color_attachment())],
+                color_attachments,
                 depth_stencil_attachment: None,
                 timestamp_writes: None,
                 occlusion_query_set: None,

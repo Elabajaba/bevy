@@ -79,14 +79,15 @@ impl ViewNode for MotionBlurNode {
                 globals_uniforms.clone(),
             )),
         );
+        let color_attachments = &[Some(RenderPassColorAttachment {
+            view: post_process.destination,
+            resolve_target: None,
+            ops: Operations::default(),
+        })];
 
         let mut render_pass = render_context.begin_tracked_render_pass(RenderPassDescriptor {
             label: Some("motion_blur_pass"),
-            color_attachments: &[Some(RenderPassColorAttachment {
-                view: post_process.destination,
-                resolve_target: None,
-                ops: Operations::default(),
-            })],
+            color_attachments,
             depth_stencil_attachment: None,
             timestamp_writes: None,
             occlusion_query_set: None,
