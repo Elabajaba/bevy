@@ -17,5 +17,8 @@ bevy = { path = "../../" }
 [target.aarch64-apple-ios-sim.dependencies]
 bevy = { path = "../../", features = ["ios_simulator"] }
 
+[target.'cfg(target_vendor = "apple")']
+rustflags = ["-C", "link-args=-weak_framework Metal -weak_framework QuartzCore -weak_framework CoreGraphics"]
+
 [lints]
 workspace = true
