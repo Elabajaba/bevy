@@ -12,6 +12,12 @@ repository = "https://github.com/bevyengine/bevy"
 documentation = "https://docs.rs/bevy"
 rust-version = "1.81.0"
 
+[patch."https://github.com/gfx-rs/wgpu.git"]
+wgpu = { git = "https://github.com/Elabajaba/wgpu.git", rev = "a8c93560235435ae88b1034be3919fa7680120f0" }
+wgpu-types = { git = "https://github.com/Elabajaba/wgpu.git", rev = "a8c93560235435ae88b1034be3919fa7680120f0" }
+naga = { git = "https://github.com/Elabajaba/wgpu.git", rev = "a8c93560235435ae88b1034be3919fa7680120f0" }
+
+
 [workspace]
 exclude = [
   "benches",
