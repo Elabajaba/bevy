@@ -1,11 +1,19 @@
 //! A simple 3D scene with light shining over a cube sitting on a plane.
 
+use std::{thread::sleep, time::Duration};
+
 use bevy::prelude::*;
 
 fn main() {
+    let server_addr = format!("0.0.0.0:{}", puffin_http::DEFAULT_PORT);
+    let _puffin_server = puffin_http::Server::new(&server_addr).unwrap();
+    eprintln!("Serving demo profile data on {server_addr}. Run `puffin_viewer` to view it.");
+    bevy::utils::profiling::puffin::set_scopes_on(true);
+
     App::new()
         .add_plugins(DefaultPlugins)
         .add_systems(Startup, setup)
+        .add_systems(Update, stuff)
         .run();
 }
 
@@ -15,6 +23,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    bevy::utils::profiling::scope!("test scope");
     // circular base
     commands.spawn((
         Mesh3d(meshes.add(Circle::new(4.0))),
@@ -40,4 +49,15 @@ fn setup(
         Camera3d::default(),
         Transform::from_xyz(-2.5, 4.5, 9.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
+}
+
+fn stuff() {
+    for i in 0..10 {
+        bevy::utils::profiling::scope!("sleeping");
+        zzz();
+    }
+}
+
+fn zzz() {
+    sleep(Duration::from_millis(2));
 }

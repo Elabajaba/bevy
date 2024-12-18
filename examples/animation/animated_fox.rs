@@ -14,6 +14,11 @@ use rand_chacha::ChaCha8Rng;
 const FOX_PATH: &str = "models/animated/Fox.glb";
 
 fn main() {
+    let server_addr = format!("0.0.0.0:{}", puffin_http::DEFAULT_PORT);
+    let _puffin_server = puffin_http::Server::new(&server_addr).unwrap();
+    eprintln!("Serving demo profile data on {server_addr}. Run `puffin_viewer` to view it.");
+    bevy::utils::profiling::puffin::set_scopes_on(true);
+    
     App::new()
         .insert_resource(AmbientLight {
             color: Color::WHITE,

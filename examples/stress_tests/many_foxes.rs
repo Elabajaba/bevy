@@ -39,6 +39,11 @@ fn main() {
     #[cfg(target_arch = "wasm32")]
     let args = Args::from_args(&[], &[]).unwrap();
 
+    let server_addr = format!("0.0.0.0:{}", puffin_http::DEFAULT_PORT);
+    let _puffin_server = puffin_http::Server::new(&server_addr).unwrap();
+    eprintln!("Serving demo profile data on {server_addr}. Run `puffin_viewer` to view it.");
+    bevy::utils::profiling::puffin::set_scopes_on(true);
+
     App::new()
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
