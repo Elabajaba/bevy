@@ -14,20 +14,20 @@ rust-version = "1.83.0"
 
 [workspace]
 exclude = [
-  "benches",
-  "crates/bevy_derive/compile_fail",
-  "crates/bevy_ecs/compile_fail",
-  "crates/bevy_reflect/compile_fail",
-  "tools/compile_fail_utils",
+    "benches",
+    "crates/bevy_derive/compile_fail",
+    "crates/bevy_ecs/compile_fail",
+    "crates/bevy_reflect/compile_fail",
+    "tools/compile_fail_utils",
 ]
 members = [
-  "crates/*",
-  "examples/mobile",
-  "tools/ci",
-  "tools/build-templated-pages",
-  "tools/build-wasm-example",
-  "tools/example-showcase",
-  "errors",
+    "crates/*",
+    "examples/mobile",
+    "tools/ci",
+    "tools/build-templated-pages",
+    "tools/build-wasm-example",
+    "tools/example-showcase",
+    "errors",
 ]
 
 [workspace.lints.clippy]
@@ -102,58 +102,59 @@ unused_qualifications = "warn"
 
 [features]
 default = [
-  "android-game-activity",
-  "android_shared_stdcxx",
-  "animation",
-  "bevy_asset",
-  "bevy_audio",
-  "bevy_color",
-  "bevy_core_pipeline",
-  "bevy_gilrs",
-  "bevy_gizmos",
-  "bevy_gltf",
-  "bevy_mesh_picking_backend",
-  "bevy_pbr",
-  "bevy_picking",
-  "bevy_render",
-  "bevy_scene",
-  "bevy_sprite",
-  "bevy_sprite_picking_backend",
-  "bevy_state",
-  "bevy_text",
-  "bevy_ui",
-  "bevy_ui_picking_backend",
-  "bevy_window",
-  "bevy_winit",
-  "custom_cursor",
-  "default_font",
-  "hdr",
-  "multi_threaded",
-  "png",
-  "smaa_luts",
-  "sysinfo_plugin",
-  "tonemapping_luts",
-  "vorbis",
-  "webgl2",
-  "x11",
+    "android-game-activity",
+    "android_shared_stdcxx",
+    "animation",
+    "bevy_asset",
+    "bevy_audio",
+    "bevy_color",
+    "bevy_core_pipeline",
+    "bevy_gilrs",
+    "bevy_gizmos",
+    "bevy_gltf",
+    "bevy_mesh_picking_backend",
+    "bevy_pbr",
+    "bevy_picking",
+    "bevy_render",
+    "bevy_scene",
+    "bevy_sprite",
+    "bevy_sprite_picking_backend",
+    "bevy_state",
+    "bevy_text",
+    "bevy_ui",
+    "bevy_ui_picking_backend",
+    "bevy_window",
+    "bevy_winit",
+    "custom_cursor",
+    "default_font",
+    "hdr",
+    "multi_threaded",
+    "png",
+    "smaa_luts",
+    "sysinfo_plugin",
+    "tonemapping_luts",
+    "vorbis",
+    "webgl2",
+    "x11",
+    "trace",
 ]
 
 # Provides an implementation for picking meshes
 bevy_mesh_picking_backend = [
-  "bevy_picking",
-  "bevy_internal/bevy_mesh_picking_backend",
+    "bevy_picking",
+    "bevy_internal/bevy_mesh_picking_backend",
 ]
 
 # Provides an implementation for picking sprites
 bevy_sprite_picking_backend = [
-  "bevy_picking",
-  "bevy_internal/bevy_sprite_picking_backend",
+    "bevy_picking",
+    "bevy_internal/bevy_sprite_picking_backend",
 ]
 
 # Provides an implementation for picking UI
 bevy_ui_picking_backend = [
-  "bevy_picking",
-  "bevy_internal/bevy_ui_picking_backend",
+    "bevy_picking",
+    "bevy_internal/bevy_ui_picking_backend",
 ]
 
 # Provides a debug overlay for bevy UI
@@ -179,9 +180,9 @@ bevy_color = ["bevy_internal/bevy_color"]
 
 # Provides cameras and other basic render pipeline features
 bevy_core_pipeline = [
-  "bevy_internal/bevy_core_pipeline",
-  "bevy_asset",
-  "bevy_render",
+    "bevy_internal/bevy_core_pipeline",
+    "bevy_asset",
+    "bevy_render",
 ]
 
 # Adds gamepad support
@@ -192,10 +193,10 @@ bevy_gltf = ["bevy_internal/bevy_gltf", "bevy_asset", "bevy_scene", "bevy_pbr"]
 
 # Adds PBR rendering
 bevy_pbr = [
-  "bevy_internal/bevy_pbr",
-  "bevy_asset",
-  "bevy_render",
-  "bevy_core_pipeline",
+    "bevy_internal/bevy_pbr",
+    "bevy_asset",
+    "bevy_render",
+    "bevy_core_pipeline",
 ]
 
 # Provides picking functionality
@@ -209,11 +210,11 @@ bevy_scene = ["bevy_internal/bevy_scene", "bevy_asset"]
 
 # Provides sprite functionality
 bevy_sprite = [
-  "bevy_internal/bevy_sprite",
-  "bevy_render",
-  "bevy_core_pipeline",
-  "bevy_color",
-  "bevy_sprite_picking_backend",
+    "bevy_internal/bevy_sprite",
+    "bevy_render",
+    "bevy_core_pipeline",
+    "bevy_color",
+    "bevy_sprite_picking_backend",
 ]
 
 # Provides text functionality
@@ -221,12 +222,12 @@ bevy_text = ["bevy_internal/bevy_text", "bevy_asset", "bevy_sprite"]
 
 # A custom ECS-driven UI framework
 bevy_ui = [
-  "bevy_internal/bevy_ui",
-  "bevy_core_pipeline",
-  "bevy_text",
-  "bevy_sprite",
-  "bevy_color",
-  "bevy_ui_picking_backend",
+    "bevy_internal/bevy_ui",
+    "bevy_core_pipeline",
+    "bevy_text",
+    "bevy_sprite",
+    "bevy_color",
+    "bevy_ui_picking_backend",
 ]
 
 # Windowing layer
@@ -255,9 +256,9 @@ trace_tracy = ["trace", "bevy_internal/trace_tracy"]
 
 # Tracing support, with memory profiling, exposing a port for Tracy
 trace_tracy_memory = [
-  "trace",
-  "bevy_internal/trace_tracy",
-  "bevy_internal/trace_tracy_memory",
+    "trace",
+    "bevy_internal/trace_tracy",
+    "bevy_internal/trace_tracy_memory",
 ]
 
 # Tracing support
@@ -412,7 +413,7 @@ pbr_transmission_textures = ["bevy_internal/pbr_transmission_textures"]
 
 # Enable support for multi-layer material textures in the `StandardMaterial`, at the risk of blowing past the global, per-shader texture limit on older/lower-end GPUs
 pbr_multi_layer_material_textures = [
-  "bevy_internal/pbr_multi_layer_material_textures",
+    "bevy_internal/pbr_multi_layer_material_textures",
 ]
 
 # Enable support for anisotropy texture in the `StandardMaterial`, at the risk of blowing past the global, per-shader texture limit on older/lower-end GPUs
@@ -465,6 +466,7 @@ ghost_nodes = ["bevy_internal/ghost_nodes"]
 
 [dependencies]
 bevy_internal = { path = "crates/bevy_internal", version = "0.15.0-dev", default-features = false }
+puffin_http = "*"
 
 # Wasm does not support dynamic linking.
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
@@ -1229,12 +1231,12 @@ description = "Meshlet rendering for dense high-poly scenes (experimental)"
 category = "3D Rendering"
 wasm = false
 setup = [
-  [
-    "curl",
-    "-o",
-    "assets/models/bunny.meshlet_mesh",
-    "https://raw.githubusercontent.com/JMS55/bevy_meshlet_asset/defbd9b32072624d40d57de7d345c66a9edf5d0b/bunny.meshlet_mesh",
-  ],
+    [
+        "curl",
+        "-o",
+        "assets/models/bunny.meshlet_mesh",
+        "https://raw.githubusercontent.com/JMS55/bevy_meshlet_asset/defbd9b32072624d40d57de7d345c66a9edf5d0b/bunny.meshlet_mesh",
+    ],
 ]
 
 [[example]]

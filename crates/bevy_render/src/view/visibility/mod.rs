@@ -417,6 +417,7 @@ fn visibility_propagate_system(
     mut visibility_query: Query<(&Visibility, &mut InheritedVisibility)>,
     children_query: Query<&Children, (With<Visibility>, With<InheritedVisibility>)>,
 ) {
+    profiling::scope!("visilbilty propagation");
     for (entity, visibility, parent, children) in &changed {
         let is_visible = match visibility {
             Visibility::Visible => true,

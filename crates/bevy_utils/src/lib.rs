@@ -60,6 +60,7 @@ pub use foldhash::fast::{FixedState, FoldHasher as DefaultHasher, RandomState};
 pub use hashbrown;
 #[cfg(feature = "std")]
 pub use parallel_queue::*;
+pub use profiling;
 pub use time::*;
 #[cfg(feature = "tracing")]
 pub use tracing;

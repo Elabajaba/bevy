@@ -9,9 +9,9 @@ use bevy_render::{
     renderer::RenderContext,
     view::{ViewDepthTexture, ViewTarget},
 };
-use bevy_utils::tracing::error;
 #[cfg(feature = "trace")]
-use bevy_utils::tracing::info_span;
+use bevy_utils::profiling;
+use bevy_utils::tracing::error;
 
 use super::AlphaMask2d;
 
@@ -54,7 +54,7 @@ impl ViewNode for MainOpaquePass2dNode {
         };
         render_context.add_command_buffer_generation_task(move |render_device| {
             #[cfg(feature = "trace")]
-            let _main_opaque_pass_2d_span = info_span!("main_opaque_pass_2d").entered();
+            profiling::scope!("main_opaque_pass_2d");
 
             // Command encoder setup
             let mut command_encoder =
@@ -80,7 +80,7 @@ impl ViewNode for MainOpaquePass2dNode {
             // Opaque draws
             if !opaque_phase.is_empty() {
                 #[cfg(feature = "trace")]
-                let _opaque_main_pass_2d_span = info_span!("opaque_main_pass_2d").entered();
+                profiling::scope!("opaque_main_pass_2d");
                 if let Err(err) = opaque_phase.render(&mut render_pass, world, view_entity) {
                     error!("Error encountered while rendering the 2d opaque phase {err:?}");
                 }
@@ -89,7 +89,7 @@ impl ViewNode for MainOpaquePass2dNode {
             // Alpha mask draws
             if !alpha_mask_phase.is_empty() {
                 #[cfg(feature = "trace")]
-                let _alpha_mask_main_pass_2d_span = info_span!("alpha_mask_main_pass_2d").entered();
+                profiling::scope!("alpha_mask_main_pass_2d");
                 if let Err(err) = alpha_mask_phase.render(&mut render_pass, world, view_entity) {
                     error!("Error encountered while rendering the 2d alpha mask phase {err:?}");
                 }

@@ -9,9 +9,9 @@ use bevy_render::{
     renderer::RenderContext,
     view::{ViewDepthTexture, ViewTarget},
 };
-use bevy_utils::tracing::error;
 #[cfg(feature = "trace")]
-use bevy_utils::tracing::info_span;
+use bevy_utils::profiling;
+use bevy_utils::tracing::error;
 
 /// A [`bevy_render::render_graph::Node`] that runs the [`Transparent3d`]
 /// [`ViewSortedRenderPhases`].
@@ -47,7 +47,7 @@ impl ViewNode for MainTransparentPass3dNode {
             // Run the transparent pass, sorted back-to-front
             // NOTE: Scoped to drop the mutable borrow of render_context
             #[cfg(feature = "trace")]
-            let _main_transparent_pass_3d_span = info_span!("main_transparent_pass_3d").entered();
+            profiling::scope!("main_transparent_pass_3d");
 
             let diagnostics = render_context.diagnostic_recorder();
 
@@ -83,7 +83,7 @@ impl ViewNode for MainTransparentPass3dNode {
         #[cfg(all(feature = "webgl", target_arch = "wasm32", not(feature = "webgpu")))]
         if camera.viewport.is_some() {
             #[cfg(feature = "trace")]
-            let _reset_viewport_pass_3d = info_span!("reset_viewport_pass_3d").entered();
+            profiling::scope!("reset_viewport_pass_3d");
             let pass_descriptor = RenderPassDescriptor {
                 label: Some("reset_viewport_pass_3d"),
                 color_attachments: &[Some(target.get_color_attachment())],

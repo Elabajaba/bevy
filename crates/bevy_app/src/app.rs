@@ -12,7 +12,7 @@ use bevy_ecs::{
     system::{IntoObserverSystem, SystemId, SystemInput},
 };
 #[cfg(feature = "trace")]
-use bevy_utils::tracing::info_span;
+use bevy_utils::profiling;
 use bevy_utils::{tracing::debug, HashMap};
 use core::{fmt::Debug, num::NonZero, panic::AssertUnwindSafe};
 use std::{
@@ -160,7 +160,7 @@ impl App {
     /// Panics if not all plugins have been built.
     pub fn run(&mut self) -> AppExit {
         #[cfg(feature = "trace")]
-        let _bevy_app_run_span = info_span!("bevy_app").entered();
+        profiling::scope!("bevy_app");
         if self.is_building_plugins() {
             panic!("App::run() was called while a plugin was building.");
         }

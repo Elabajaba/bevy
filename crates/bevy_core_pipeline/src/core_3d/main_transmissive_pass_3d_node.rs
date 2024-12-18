@@ -9,9 +9,9 @@ use bevy_render::{
     renderer::RenderContext,
     view::{ViewDepthTexture, ViewTarget},
 };
-use bevy_utils::tracing::error;
 #[cfg(feature = "trace")]
-use bevy_utils::tracing::info_span;
+use bevy_utils::profiling;
+use bevy_utils::tracing::error;
 use core::ops::Range;
 
 /// A [`bevy_render::render_graph::Node`] that runs the [`Transmissive3d`]
@@ -60,7 +60,7 @@ impl ViewNode for MainTransmissivePass3dNode {
         // Run the transmissive pass, sorted back-to-front
         // NOTE: Scoped to drop the mutable borrow of render_context
         #[cfg(feature = "trace")]
-        let _main_transmissive_pass_3d_span = info_span!("main_transmissive_pass_3d").entered();
+        profiling::scope!("main_transmissive_pass_3d");
 
         if !transmissive_phase.items.is_empty() {
             let screen_space_specular_transmission_steps =

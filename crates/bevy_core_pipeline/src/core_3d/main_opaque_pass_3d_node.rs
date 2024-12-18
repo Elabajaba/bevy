@@ -12,9 +12,9 @@ use bevy_render::{
     renderer::RenderContext,
     view::{ViewDepthTexture, ViewTarget, ViewUniformOffset},
 };
-use bevy_utils::tracing::error;
 #[cfg(feature = "trace")]
-use bevy_utils::tracing::info_span;
+use bevy_utils::profiling;
+use bevy_utils::tracing::error;
 
 use super::AlphaMask3d;
 
@@ -69,7 +69,7 @@ impl ViewNode for MainOpaquePass3dNode {
         let view_entity = graph.view_entity();
         render_context.add_command_buffer_generation_task(move |render_device| {
             #[cfg(feature = "trace")]
-            let _main_opaque_pass_3d_span = info_span!("main_opaque_pass_3d").entered();
+            profiling::scope!("main_opaque_pass_3d");
 
             // Command encoder setup
             let mut command_encoder =
@@ -95,7 +95,7 @@ impl ViewNode for MainOpaquePass3dNode {
             // Opaque draws
             if !opaque_phase.is_empty() {
                 #[cfg(feature = "trace")]
-                let _opaque_main_pass_3d_span = info_span!("opaque_main_pass_3d").entered();
+                profiling::scope!("opaque_main_pass_3d");
                 if let Err(err) = opaque_phase.render(&mut render_pass, world, view_entity) {
                     error!("Error encountered while rendering the opaque phase {err:?}");
                 }
@@ -104,7 +104,7 @@ impl ViewNode for MainOpaquePass3dNode {
             // Alpha draws
             if !alpha_mask_phase.is_empty() {
                 #[cfg(feature = "trace")]
-                let _alpha_mask_main_pass_3d_span = info_span!("alpha_mask_main_pass_3d").entered();
+                profiling::scope!("alpha_mask_main_pass_3d");
                 if let Err(err) = alpha_mask_phase.render(&mut render_pass, world, view_entity) {
                     error!("Error encountered while rendering the alpha mask phase {err:?}");
                 }

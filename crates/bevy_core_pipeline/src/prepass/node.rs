@@ -8,9 +8,9 @@ use bevy_render::{
     renderer::RenderContext,
     view::{ViewDepthTexture, ViewUniformOffset},
 };
-use bevy_utils::tracing::error;
 #[cfg(feature = "trace")]
-use bevy_utils::tracing::info_span;
+use bevy_utils::profiling;
+use bevy_utils::tracing::error;
 
 use crate::skybox::prepass::{RenderSkyboxPrepassPipeline, SkyboxPrepassBindGroup};
 
@@ -95,7 +95,7 @@ impl ViewNode for PrepassNode {
         let view_entity = graph.view_entity();
         render_context.add_command_buffer_generation_task(move |render_device| {
             #[cfg(feature = "trace")]
-            let _prepass_span = info_span!("prepass").entered();
+            profiling::scope!("prepass");
 
             // Command encoder setup
             let mut command_encoder =
@@ -124,7 +124,7 @@ impl ViewNode for PrepassNode {
                 || !opaque_prepass_phase.unbatchable_mesh_keys.is_empty()
             {
                 #[cfg(feature = "trace")]
-                let _opaque_prepass_span = info_span!("opaque_prepass").entered();
+                profiling::scope!("opaque_prepass");
                 if let Err(err) = opaque_prepass_phase.render(&mut render_pass, world, view_entity)
                 {
                     error!("Error encountered while rendering the opaque prepass phase {err:?}");
@@ -134,7 +134,7 @@ impl ViewNode for PrepassNode {
             // Alpha masked draws
             if !alpha_mask_prepass_phase.is_empty() {
                 #[cfg(feature = "trace")]
-                let _alpha_mask_prepass_span = info_span!("alpha_mask_prepass").entered();
+                profiling::scope!("alpha_mask_prepass");
                 if let Err(err) =
                     alpha_mask_prepass_phase.render(&mut render_pass, world, view_entity)
                 {

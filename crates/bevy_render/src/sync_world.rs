@@ -245,6 +245,8 @@ pub(crate) fn despawn_temporary_render_entities(
     for e in local.drain(..).rev() {
         world.despawn(e);
     }
+
+    profiling::finish_frame!();
 }
 
 /// This module exists to keep the complex unsafe code out of the main module.

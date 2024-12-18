@@ -9,9 +9,9 @@ use bevy_render::{
     renderer::RenderContext,
     view::{ViewDepthTexture, ViewTarget},
 };
-use bevy_utils::tracing::error;
 #[cfg(feature = "trace")]
-use bevy_utils::tracing::info_span;
+use bevy_utils::profiling;
+use bevy_utils::tracing::error;
 
 #[derive(Default)]
 pub struct MainTransparentPass2dNode {}
@@ -44,7 +44,7 @@ impl ViewNode for MainTransparentPass2dNode {
         // This needs to run at least once to clear the background color, even if there are no items to render
         {
             #[cfg(feature = "trace")]
-            let _main_pass_2d = info_span!("main_transparent_pass_2d").entered();
+            profiling::scope!("main_transparent_pass_2d");
 
             let diagnostics = render_context.diagnostic_recorder();
 
@@ -70,8 +70,7 @@ impl ViewNode for MainTransparentPass2dNode {
 
             if !transparent_phase.items.is_empty() {
                 #[cfg(feature = "trace")]
-                let _transparent_main_pass_2d_span =
-                    info_span!("transparent_main_pass_2d").entered();
+                profiling::scope!("transparent_main_pass_2d");
                 if let Err(err) = transparent_phase.render(&mut render_pass, world, view_entity) {
                     error!("Error encountered while rendering the transparent 2D phase {err:?}");
                 }
@@ -85,7 +84,7 @@ impl ViewNode for MainTransparentPass2dNode {
         #[cfg(all(feature = "webgl", target_arch = "wasm32", not(feature = "webgpu")))]
         if camera.viewport.is_some() {
             #[cfg(feature = "trace")]
-            let _reset_viewport_pass_2d = info_span!("reset_viewport_pass_2d").entered();
+            profiling::scope!("reset_viewport_pass_2d");
             let pass_descriptor = RenderPassDescriptor {
                 label: Some("reset_viewport_pass_2d"),
                 color_attachments: &[Some(target.get_color_attachment())],

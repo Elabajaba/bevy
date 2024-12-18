@@ -9,9 +9,9 @@ use bevy_render::{
     renderer::RenderContext,
     view::ViewDepthTexture,
 };
-use bevy_utils::tracing::error;
 #[cfg(feature = "trace")]
-use bevy_utils::tracing::info_span;
+use bevy_utils::profiling;
+use bevy_utils::tracing::error;
 
 use crate::prepass::ViewPrepassTextures;
 
@@ -121,7 +121,7 @@ impl ViewNode for DeferredGBufferPrepassNode {
         let view_entity = graph.view_entity();
         render_context.add_command_buffer_generation_task(move |render_device| {
             #[cfg(feature = "trace")]
-            let _deferred_span = info_span!("deferred_prepass").entered();
+            profiling::scope!("deferred_prepass");
 
             // Command encoder setup
             let mut command_encoder =
@@ -147,7 +147,7 @@ impl ViewNode for DeferredGBufferPrepassNode {
                 || !opaque_deferred_phase.unbatchable_mesh_keys.is_empty()
             {
                 #[cfg(feature = "trace")]
-                let _opaque_prepass_span = info_span!("opaque_deferred_prepass").entered();
+                profiling::scope!("opaque_deferred_prepass");
                 if let Err(err) = opaque_deferred_phase.render(&mut render_pass, world, view_entity)
                 {
                     error!("Error encountered while rendering the opaque deferred phase {err:?}");
@@ -157,7 +157,7 @@ impl ViewNode for DeferredGBufferPrepassNode {
             // Alpha masked draws
             if !alpha_mask_deferred_phase.is_empty() {
                 #[cfg(feature = "trace")]
-                let _alpha_mask_deferred_span = info_span!("alpha_mask_deferred_prepass").entered();
+                profiling::scope!("alpha_mask_deferred_prepass");
                 if let Err(err) =
                     alpha_mask_deferred_phase.render(&mut render_pass, world, view_entity)
                 {

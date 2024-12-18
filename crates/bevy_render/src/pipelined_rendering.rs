@@ -148,7 +148,7 @@ impl Plugin for PipelinedRenderingPlugin {
 
         std::thread::spawn(move || {
             #[cfg(feature = "trace")]
-            let _span = bevy_utils::tracing::info_span!("render thread").entered();
+            bevy_utils::profiling::scope!("render thread");
 
             let compute_task_pool = ComputeTaskPool::get();
             loop {

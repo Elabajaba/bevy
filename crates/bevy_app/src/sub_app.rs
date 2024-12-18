@@ -7,9 +7,10 @@ use bevy_ecs::{
 };
 
 #[cfg(feature = "trace")]
-use bevy_utils::tracing::info_span;
+use bevy_utils::profiling;
 use bevy_utils::{HashMap, HashSet};
 use core::fmt::Debug;
+use std::fmt::Write;
 
 type ExtractFn = Box<dyn Fn(&mut World, &mut World) + Send>;
 
@@ -455,15 +456,13 @@ impl SubApps {
     /// [`extract`](SubApp::extract) and [`update`](SubApp::update) for the rest.
     pub fn update(&mut self) {
         #[cfg(feature = "trace")]
-        let _bevy_update_span = info_span!("update").entered();
+        profiling::scope!("update");
         {
             #[cfg(feature = "trace")]
-            let _bevy_frame_update_span = info_span!("main app").entered();
+            profiling::scope!("main app");
             self.main.run_default_schedule();
         }
         for (_label, sub_app) in self.sub_apps.iter_mut() {
-            #[cfg(feature = "trace")]
-            let _sub_app_span = info_span!("sub app", name = ?_label).entered();
             sub_app.extract(&mut self.main.world);
             sub_app.update();
         }
