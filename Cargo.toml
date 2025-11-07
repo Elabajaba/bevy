@@ -1122,6 +1122,7 @@ wasm = true
 name = "anti_aliasing"
 path = "examples/3d/anti_aliasing.rs"
 doc-scrape-examples = true
+required-features = ["free_camera"]
 
 [package.metadata.example.anti_aliasing]
 name = "Anti-aliasing"

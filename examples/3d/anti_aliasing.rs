@@ -7,11 +7,13 @@ use bevy::anti_alias::fsr3::Fsr3;
 use bevy::{
     anti_alias::{
         contrast_adaptive_sharpening::ContrastAdaptiveSharpening,
+        fsr3::Fsr3QualityMode,
         fxaa::{Fxaa, Sensitivity},
         smaa::{Smaa, SmaaPreset},
         taa::TemporalAntiAliasing,
     },
     asset::RenderAssetUsages,
+    camera_controller::free_camera::{FreeCamera, FreeCameraPlugin},
     core_pipeline::prepass::{DepthPrepass, MotionVectorPrepass},
     image::{ImageSampler, ImageSamplerDescriptor},
     light::CascadeShadowConfigBuilder,
@@ -37,10 +39,11 @@ fn main() {
     )));
 
     app.add_plugins(DefaultPlugins)
+        .add_plugins(FreeCameraPlugin)
         .add_systems(Startup, setup)
         .add_systems(
             Update,
-            (modify_aa, modify_sharpening, modify_projection, update_ui),
+            (modify_aa, modify_sharpening, modify_projection, update_ui, rotate_head),
         );
 
     app.run();
@@ -92,7 +95,7 @@ fn modify_aa(
             Option<&mut Fxaa>,
             Option<&mut Smaa>,
             Option<&TemporalAntiAliasing>,
-            Option<&Fsr3>,
+            Option<&mut Fsr3>,
             &mut Msaa,
         ),
         With<Camera>,
@@ -133,13 +136,13 @@ fn modify_aa(
 
     // MSAA Sample Count
     if *msaa != Msaa::Off {
-        if keys.just_pressed(KeyCode::KeyQ) {
+        if keys.just_pressed(KeyCode::KeyZ) {
             *msaa = Msaa::Sample2;
         }
-        if keys.just_pressed(KeyCode::KeyW) {
+        if keys.just_pressed(KeyCode::KeyX) {
             *msaa = Msaa::Sample4;
         }
-        if keys.just_pressed(KeyCode::KeyE) {
+        if keys.just_pressed(KeyCode::KeyC) {
             *msaa = Msaa::Sample8;
         }
     }
@@ -157,23 +160,23 @@ fn modify_aa(
 
     // FXAA Settings
     if let Some(mut fxaa) = fxaa {
-        if keys.just_pressed(KeyCode::KeyQ) {
+        if keys.just_pressed(KeyCode::KeyZ) {
             fxaa.edge_threshold = Sensitivity::Low;
             fxaa.edge_threshold_min = Sensitivity::Low;
         }
-        if keys.just_pressed(KeyCode::KeyW) {
+        if keys.just_pressed(KeyCode::KeyX) {
             fxaa.edge_threshold = Sensitivity::Medium;
             fxaa.edge_threshold_min = Sensitivity::Medium;
         }
-        if keys.just_pressed(KeyCode::KeyE) {
+        if keys.just_pressed(KeyCode::KeyC) {
             fxaa.edge_threshold = Sensitivity::High;
             fxaa.edge_threshold_min = Sensitivity::High;
         }
-        if keys.just_pressed(KeyCode::KeyR) {
+        if keys.just_pressed(KeyCode::KeyV) {
             fxaa.edge_threshold = Sensitivity::Ultra;
             fxaa.edge_threshold_min = Sensitivity::Ultra;
         }
-        if keys.just_pressed(KeyCode::KeyT) {
+        if keys.just_pressed(KeyCode::KeyB) {
             fxaa.edge_threshold = Sensitivity::Extreme;
             fxaa.edge_threshold_min = Sensitivity::Extreme;
         }
@@ -192,16 +195,16 @@ fn modify_aa(
 
     // SMAA Settings
     if let Some(mut smaa) = smaa {
-        if keys.just_pressed(KeyCode::KeyQ) {
+        if keys.just_pressed(KeyCode::KeyZ) {
             smaa.preset = SmaaPreset::Low;
         }
-        if keys.just_pressed(KeyCode::KeyW) {
+        if keys.just_pressed(KeyCode::KeyX) {
             smaa.preset = SmaaPreset::Medium;
         }
-        if keys.just_pressed(KeyCode::KeyE) {
+        if keys.just_pressed(KeyCode::KeyC) {
             smaa.preset = SmaaPreset::High;
         }
-        if keys.just_pressed(KeyCode::KeyR) {
+        if keys.just_pressed(KeyCode::KeyV) {
             smaa.preset = SmaaPreset::Ultra;
         }
     }
@@ -225,7 +228,28 @@ fn modify_aa(
             .remove::<Smaa>()
             .remove::<TaaComponents>()
             .remove::<DlssComponents>()
-            .insert(Fsr3::default());
+            .insert(Fsr3 {
+                reset: true,
+                quality_mode: Fsr3QualityMode::Quality,
+                ..default()
+            });
+    }
+    if let Some(mut fsr3) = fsr3 {
+        if keys.just_pressed(KeyCode::KeyZ) {
+            fsr3.quality_mode = Fsr3QualityMode::UltraPerformance;
+        }
+        if keys.just_pressed(KeyCode::KeyX) {
+            fsr3.quality_mode = Fsr3QualityMode::Performance;
+        }
+        if keys.just_pressed(KeyCode::KeyC) {
+            fsr3.quality_mode = Fsr3QualityMode::Balanced;
+        }
+        if keys.just_pressed(KeyCode::KeyV) {
+            fsr3.quality_mode = Fsr3QualityMode::Quality;
+        }
+        if keys.just_pressed(KeyCode::KeyB) {
+            fsr3.quality_mode = Fsr3QualityMode::NativeAA;
+        }
     }
 
     // DLSS
@@ -371,36 +395,36 @@ fn update_ui(
 
     if *msaa != Msaa::Off {
         ui.push_str("\n----------\n\nSample Count\n");
-        draw_selectable_menu_item(ui, "2", 'Q', *msaa == Msaa::Sample2);
-        draw_selectable_menu_item(ui, "4", 'W', *msaa == Msaa::Sample4);
-        draw_selectable_menu_item(ui, "8", 'E', *msaa == Msaa::Sample8);
+        draw_selectable_menu_item(ui, "2", 'Z', *msaa == Msaa::Sample2);
+        draw_selectable_menu_item(ui, "4", 'X', *msaa == Msaa::Sample4);
+        draw_selectable_menu_item(ui, "8", 'C', *msaa == Msaa::Sample8);
     }
 
     if let Some(fxaa) = fxaa {
         ui.push_str("\n----------\n\nSensitivity\n");
-        draw_selectable_menu_item(ui, "Low", 'Q', fxaa.edge_threshold == Sensitivity::Low);
+        draw_selectable_menu_item(ui, "Low", 'Z', fxaa.edge_threshold == Sensitivity::Low);
         draw_selectable_menu_item(
             ui,
             "Medium",
-            'W',
+            'X',
             fxaa.edge_threshold == Sensitivity::Medium,
         );
-        draw_selectable_menu_item(ui, "High", 'E', fxaa.edge_threshold == Sensitivity::High);
-        draw_selectable_menu_item(ui, "Ultra", 'R', fxaa.edge_threshold == Sensitivity::Ultra);
+        draw_selectable_menu_item(ui, "High", 'C', fxaa.edge_threshold == Sensitivity::High);
+        draw_selectable_menu_item(ui, "Ultra", 'V', fxaa.edge_threshold == Sensitivity::Ultra);
         draw_selectable_menu_item(
             ui,
             "Extreme",
-            'T',
+            'B',
             fxaa.edge_threshold == Sensitivity::Extreme,
         );
     }
 
     if let Some(smaa) = smaa {
         ui.push_str("\n----------\n\nQuality\n");
-        draw_selectable_menu_item(ui, "Low", 'Q', smaa.preset == SmaaPreset::Low);
-        draw_selectable_menu_item(ui, "Medium", 'W', smaa.preset == SmaaPreset::Medium);
-        draw_selectable_menu_item(ui, "High", 'E', smaa.preset == SmaaPreset::High);
-        draw_selectable_menu_item(ui, "Ultra", 'R', smaa.preset == SmaaPreset::Ultra);
+        draw_selectable_menu_item(ui, "Low", 'Z', smaa.preset == SmaaPreset::Low);
+        draw_selectable_menu_item(ui, "Medium", 'X', smaa.preset == SmaaPreset::Medium);
+        draw_selectable_menu_item(ui, "High", 'C', smaa.preset == SmaaPreset::High);
+        draw_selectable_menu_item(ui, "Ultra", 'V', smaa.preset == SmaaPreset::Ultra);
     }
 
     #[cfg(all(feature = "dlss", not(feature = "force_disable_dlss")))]
@@ -423,6 +447,40 @@ fn update_ui(
         draw_selectable_menu_item(ui, "Balanced", 'V', pqm == DlssPerfQualityMode::Balanced);
         draw_selectable_menu_item(ui, "Quality", 'B', pqm == DlssPerfQualityMode::Quality);
         draw_selectable_menu_item(ui, "DLAA", 'N', pqm == DlssPerfQualityMode::Dlaa);
+    }
+
+    if let Some(fsr3) = fsr3 {
+        ui.push_str("\n----------\n\nQuality\n");
+        draw_selectable_menu_item(
+            ui,
+            "UltraPerformance",
+            'Z',
+            fsr3.quality_mode == Fsr3QualityMode::UltraPerformance,
+        );
+        draw_selectable_menu_item(
+            ui,
+            "Performance",
+            'X',
+            fsr3.quality_mode == Fsr3QualityMode::Performance,
+        );
+        draw_selectable_menu_item(
+            ui,
+            "Balanced",
+            'C',
+            fsr3.quality_mode == Fsr3QualityMode::Balanced,
+        );
+        draw_selectable_menu_item(
+            ui,
+            "Quality",
+            'V',
+            fsr3.quality_mode == Fsr3QualityMode::Quality,
+        );
+        draw_selectable_menu_item(
+            ui,
+            "Native",
+            'B',
+            fsr3.quality_mode == Fsr3QualityMode::NativeAA,
+        );
     }
 
     ui.push_str("\n----------\n\n");
@@ -467,13 +525,14 @@ fn setup(
             Mesh3d(meshes.add(Cuboid::new(0.25, 0.25, 0.25))),
             MeshMaterial3d(cube_material.clone()),
             Transform::from_xyz(i as f32 * 0.25 - 1.0, 0.125, -i as f32 * 0.5),
+            Head
         ));
     }
 
     // Flight Helmet
     commands.spawn(SceneRoot(asset_server.load(
         GltfAssetLabel::Scene(0).from_asset("models/FlightHelmet/FlightHelmet.gltf"),
-    )));
+    ))).insert(Head);
 
     // Light
     commands.spawn((
@@ -509,11 +568,13 @@ fn setup(
         DistanceFog {
             color: Color::srgba_u8(43, 44, 47, 255),
             falloff: FogFalloff::Linear {
-                start: 1.0,
-                end: 4.0,
+                start: 5.0,
+                end: 9.0,
             },
             ..default()
         },
+        Msaa::Off,
+        FreeCamera::default(),
     ));
 
     // example instructions
@@ -563,4 +624,16 @@ fn uv_debug_texture() -> Image {
     );
     img.sampler = ImageSampler::Descriptor(ImageSamplerDescriptor::default());
     img
+}
+
+#[derive(Component)]
+struct Head;
+
+fn rotate_head(mut head_transform: Query<&mut Transform, With<Head>>, time: Res<Time>) {
+    for mut transform in &mut head_transform {
+        transform.rotate_y(time.delta_secs() * 2.);
+        transform.rotate_z(time.delta_secs() * 1.);
+    
+    }
+    time.delta_secs();
 }
