@@ -37,7 +37,9 @@ bevy_time = { path = "../bevy_time", version = "0.18.0-dev" }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 dlss_wgpu = { version = "1", optional = true }
 uuid = { version = "1", optional = true }
-wgpu-ffx = { git = "https://github.com/cwfitzgerald/wgpu-ffx", rev = "ad7ce17c" }
+# wgpu-ffx = { path = "E:/temp/wgpu-ffx/wgpu-ffx" }
+wgpu-ffx = { git = "https://github.com/cwfitzgerald/wgpu-ffx", rev = "90e743572d0301889301e9f4ced7afa7308f8aff" }
+# wgpu-ffx = { git = "https://github.com/cwfitzgerald/wgpu-ffx", rev = "ad7ce17c" }
 wgpu = { version = "26" }
 
 [lints]
