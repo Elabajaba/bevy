@@ -300,7 +300,8 @@ impl ViewNode for Fsr3Node {
 
         // Calculate motion vector scale
         // Bevy's motion vectors are in render resolution, FSR3 expects them in pixels
-        let motion_vector_scale = [-(render_size.x as f32), -(render_size.y as f32)];
+        // let motion_vector_scale = [-1.0, -1.0];
+        let motion_vector_scale = [(render_size.x as f32), (render_size.y as f32)];
 
         let mut context = fsr3_context.context.lock().unwrap();
 
@@ -324,7 +325,7 @@ impl ViewNode for Fsr3Node {
             output: wgpu::Texture::clone(&view_target.destination_texture),
             render_size: [render_size.x, render_size.y],
             upscale_size: [upscale_size.x, upscale_size.y],
-            jitter_offset: [temporal_jitter.offset.x, temporal_jitter.offset.y],
+            jitter_offset: [-temporal_jitter.offset.x, -temporal_jitter.offset.y],
             motion_vector_scale,
             camera_fov_y,
             camera_near,
@@ -340,8 +341,6 @@ impl ViewNode for Fsr3Node {
             transparency_and_composition: None,
             flags: FsrDispatchFlags::empty(),
         };
-
-        println!("FSR3BB");
 
         // Execute FSR3
         context
@@ -449,19 +448,20 @@ fn prepare_fsr3_jitter_and_context(
             let max_render_size = fsr3.quality_mode.render_resolution(upscale_resolution);
 
             // Setup FSR3 context flags
-            let mut flags = FsrContextFlags::HIGH_DYNAMIC_RANGE
+            let flags = FsrContextFlags::HIGH_DYNAMIC_RANGE
                 | FsrContextFlags::DEPTH_INVERTED
+                | FsrContextFlags::MOTION_VECTORS_JITTER_CANCELLATION
                 | FsrContextFlags::DEPTH_INFINITE;
 
-            // Check if using infinite depth by examining the projection matrix
-            // For infinite far plane with reversed z: clip_from_view[3][2] == near and far == infinity
-            // We check if w_axis.w == 0.0 (perspective) and assume infinite if so
-            let clip_from_view = view.clip_from_view;
-            if clip_from_view.w_axis.w == 0.0 {
-                // Perspective projection - assume infinite depth for now
-                // (Bevy typically uses infinite reversed-z for perspective)
-                flags |= FsrContextFlags::DEPTH_INFINITE;
-            }
+            // // Check if using infinite depth by examining the projection matrix
+            // // For infinite far plane with reversed z: clip_from_view[3][2] == near and far == infinity
+            // // We check if w_axis.w == 0.0 (perspective) and assume infinite if so
+            // let clip_from_view = view.clip_from_view;
+            // if clip_from_view.w_axis.w == 0.0 {
+            //     // Perspective projection - assume infinite depth for now
+            //     // (Bevy typically uses infinite reversed-z for perspective)
+            //     flags |= FsrContextFlags::DEPTH_INFINITE;
+            // }
 
             // Create FSR3 context
             let context_info = FsrContextInfo {
