@@ -29,7 +29,7 @@ use bevy_pbr::DefaultOpaqueRendererMethod;
 use bevy_reflect::{std_traits::ReflectDefault, Reflect};
 use bevy_render::{
     init_gpu_resource, renderer::RenderDevice, ExtractSchedule, Render, RenderApp, RenderStartup,
-    RenderSystems,
+    RenderSystems, texture::CachedTexture,
 };
 use bevy_shader::load_shader_library;
 use extract::extract_solari_lighting;
@@ -261,4 +261,13 @@ fn manage_prepass_double_buffers(
             }
         }
     }
+}
+/// Additional textures needed as inputs for [`DlssRayReconstructionFeature`].
+#[derive(Component)]
+pub struct ViewDlssRayReconstructionTextures {
+    pub diffuse_albedo: CachedTexture,
+    pub specular_albedo: CachedTexture,
+    pub normal_roughness: CachedTexture,
+    pub depth: CachedTexture,
+    pub specular_motion_vectors: CachedTexture,
 }

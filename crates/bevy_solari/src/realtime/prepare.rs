@@ -246,8 +246,8 @@ pub fn prepare_solari_lighting_resources(
             view_size,
         });
 
-        #[cfg(all(feature = "dlss", not(feature = "force_disable_dlss")))]
-        if has_dlss_rr {
+        // #[cfg(all(feature = "dlss", not(feature = "force_disable_dlss")))]
+        // if has_dlss_rr {
             let diffuse_albedo = render_device.create_texture(&TextureDescriptor {
                 label: Some("solari_lighting_diffuse_albedo"),
                 size: view_size.to_extents(),
@@ -313,7 +313,7 @@ pub fn prepare_solari_lighting_resources(
 
             commands
                 .entity(entity)
-                .insert(ViewDlssRayReconstructionTextures {
+                .insert(super::ViewDlssRayReconstructionTextures {
                     diffuse_albedo: CachedTexture {
                         texture: diffuse_albedo,
                         default_view: diffuse_albedo_view,
@@ -335,6 +335,6 @@ pub fn prepare_solari_lighting_resources(
                         default_view: specular_motion_vectors_view,
                     },
                 });
-        }
+        // }
     }
 }

@@ -355,16 +355,6 @@ impl DlssFeature for DlssRayReconstructionFeature {
     }
 }
 
-/// Additional textures needed as inputs for [`DlssRayReconstructionFeature`].
-#[derive(Component)]
-pub struct ViewDlssRayReconstructionTextures {
-    pub diffuse_albedo: CachedTexture,
-    pub specular_albedo: CachedTexture,
-    pub normal_roughness: CachedTexture,
-    pub depth: CachedTexture,
-    pub specular_motion_vectors: CachedTexture,
-}
-
 #[reflect_remote(DlssPerfQualityMode)]
 #[derive(Default)]
 enum DlssPerfQualityModeRemoteReflect {
