@@ -12,6 +12,50 @@ repository = "https://github.com/bevyengine/bevy"
 documentation = "https://docs.rs/bevy"
 rust-version = "1.92.0"
 
+# [patch.crates-io]
+# wgpu = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-core = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-hal = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-types = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# naga = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-naga-bridge = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu = {  path = "E:/programming/wgpu/wgpu" }
+# wgpu-core = {  path = "E:/programming/wgpu/wgpu-core" }
+# wgpu-hal = { path = "E:/programming/wgpu/wgpu-hal" }
+# wgpu-types = {  path = "E:/programming/wgpu/wgpu-types" }
+# naga_oil = {  path = "E:/programming/naga_oil" }
+# naga = {  path = "E:/programming/wgpu/naga" }
+# wgpu-naga-bridge = { path = "E:/programming/wgpu/wgpu-naga-bridge" }
+
+# [patch."https://github.com/JMS55/wgpu"]
+# wgpu = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-core = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-hal = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-types = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# naga = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-naga-bridge = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# # wgpu = {  path = "E:/programming/wgpu/wgpu" }
+# # wgpu-core = {  path = "E:/programming/wgpu/wgpu-core" }
+# # wgpu-hal = { path = "E:/programming/wgpu/wgpu-hal" }
+# # wgpu-types = {  path = "E:/programming/wgpu/wgpu-types" }
+# # naga_oil = {  path = "E:/programming/naga_oil" }
+# # naga = {  path = "E:/programming/wgpu/naga" }
+# # wgpu-naga-bridge = { path = "E:/programming/wgpu/wgpu-naga-bridge" }
+
+# [patch."https://github.com/elabajaba/naga_oil"]
+# wgpu = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-core = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-hal = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-types = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# naga = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# wgpu-naga-bridge = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp" }
+# # wgpu = {  path = "E:/programming/wgpu/wgpu" }
+# # wgpu-core = {  path = "E:/programming/wgpu/wgpu-core" }
+# # wgpu-hal = { path = "E:/programming/wgpu/wgpu-hal" }
+# # wgpu-types = {  path = "E:/programming/wgpu/wgpu-types" }
+# # naga_oil = {  path = "E:/programming/naga_oil" }
+# # naga = {  path = "E:/programming/wgpu/naga" }
+
 [workspace]
 resolver = "2"
 members = [

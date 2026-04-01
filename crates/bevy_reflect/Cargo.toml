@@ -129,7 +129,8 @@ uuid = { version = "1.21.0", default-features = false, optional = true, features
   "serde",
 ] }
 variadics_please = "1.1"
-wgpu-types = { version = "29.0.1", features = [
+# wgpu-types = { version = "29.0.1", features = [
+wgpu-types = { git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp", features = [
   "serde",
 ], optional = true, default-features = false }
 

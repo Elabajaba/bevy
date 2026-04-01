@@ -16,23 +16,28 @@ bevy_platform = { path = "../bevy_platform", version = "0.19.0-dev" }
 bevy_utils = { path = "../bevy_utils", version = "0.19.0-dev" }
 
 # other
-wgpu-types = { version = "29.0.1", default-features = false }
-naga = { version = "29.0.1", features = ["wgsl-in"] }
-wgpu-naga-bridge = { version = "29.0.1", default-features = false }
+# wgpu-types = { version = "29.0.1", default-features = false }
+wgpu-types = {  git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp", default-features = false }
+# naga = { version = "29.0.1", features = ["wgsl-in"] }
+naga = {  git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp", features = ["wgsl-in"] }
+# wgpu-naga-bridge = { version = "29.0.1", default-features = false }
+wgpu-naga-bridge = {  git = "https://github.com/elabajaba/wgpu", branch = "proper-loops-temp", default-features = false }
 serde = { version = "1", features = ["derive"] }
 thiserror = { version = "2", default-features = false }
 wesl = { version = "0.3.1", optional = true }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # Omit the `glsl` feature in non-WebAssembly by default.
-naga_oil = { version = "0.22", default-features = false, features = [
+# naga_oil = { version = "0.22", default-features = false, features = [
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+naga_oil = { git = "https://github.com/elabajaba/naga_oil", branch = "forloops", default-features = false, features = [
   "test_shader",
 ] }
 
+# naga_oil = { version = "0.22" }
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-naga_oil = { version = "0.22" }
+naga_oil = { git = "https://github.com/elabajaba/naga_oil", branch = "forloops" }
 
 [features]
 shader_format_glsl = ["naga/glsl-in", "naga/wgsl-out", "naga_oil/glsl"]
